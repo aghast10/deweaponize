@@ -1,0 +1,71 @@
+/* =============================================
+   Blur pending elements BEFORE they're readable.
+   The class is added per-element as soon as it's
+   detected, removed once the API result arrives.
+   ============================================= */
+
+.pharmakon-pending {
+  filter: blur(6px) !important;
+  user-select: none !important;
+  pointer-events: none !important;
+  transition: filter 0.25s ease-out;
+}
+
+/* =============================================
+   Toast overlay (bottom-right)
+   ============================================= */
+
+.pharmakon-overlay {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font: 14px/1.4 system-ui, sans-serif;
+  z-index: 2147483647;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  max-width: 360px;
+  animation: pharmakon-fadein 0.15s ease-out;
+}
+
+.pharmakon-overlay.pharmakon-error {
+  background: #6b2020;
+}
+
+/* =============================================
+   Inline replaced text (individual passages)
+   ============================================= */
+
+.pharmakon-replaced {
+  background: rgba(100, 140, 255, 0.10);
+  border-bottom: 2px solid rgba(100, 140, 255, 0.35);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pharmakon-replaced:hover {
+  background: rgba(100, 140, 255, 0.20);
+}
+
+/* Block-level replaced element (whole tweet/post) */
+.pharmakon-replaced-block {
+  cursor: pointer;
+}
+
+/* Toggled: showing the original text */
+.pharmakon-replaced.pharmakon-showing-original,
+.pharmakon-replaced-block.pharmakon-showing-original {
+  background: rgba(255, 180, 50, 0.10);
+  border-bottom-color: rgba(255, 180, 50, 0.4);
+}
+
+/* =============================================
+   Animations
+   ============================================= */
+
+@keyframes pharmakon-fadein {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

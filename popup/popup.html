@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>Pharmakon</h1>
+      <p class="subtitle">Rewrites text in your chosen tone</p>
+    </div>
+    <button id="toggle-btn" class="toggle off">OFF</button>
+  </div>
+
+  <label for="provider">Provider</label>
+  <select id="provider">
+    <option value="local">Local — Claude Code subscription</option>
+    <option value="api">API key — Anthropic direct</option>
+  </select>
+
+  <div id="api-key-group" class="hidden">
+    <label for="api-key">Anthropic API Key</label>
+    <input type="password" id="api-key" placeholder="sk-ant-…">
+  </div>
+
+  <div id="proxy-group">
+    <label for="proxy-url">Proxy URL</label>
+    <input type="text" id="proxy-url" value="http://127.0.0.1:7880">
+    <p class="sub-hint">Run: <code>node proxy.js</code> in the pharmakon folder</p>
+  </div>
+
+  <label for="tone">Target tone</label>
+  <select id="tone">
+    <option value="neutral and calm">Neutral</option>
+    <option value="casual and friendly">Casual</option>
+    <option value="formal and respectful">Formal</option>
+    <option value="warm and encouraging">Warm</option>
+    <option value="explain like I'm five">ELI5</option>
+    <option value="humorous and witty">Humorous</option>
+    <option value="academic and precise">Academic</option>
+    <option value="concise and matter-of-fact">Concise</option>
+    <option value="poetic">Poetic</option>
+  </select>
+
+  <label for="sensitivity">Detection sensitivity</label>
+  <select id="sensitivity">
+    <option value="low">Low — only hostile/hateful</option>
+    <option value="moderate" selected>Moderate — aggressive, demeaning</option>
+    <option value="high">High — any harshness</option>
+  </select>
+
+  <div id="model-group" class="hidden">
+    <label for="model">Model</label>
+    <select id="model">
+      <option value="claude-haiku-4-5-20251001">Haiku 4.5 (fast, cheap)</option>
+      <option value="claude-sonnet-4-6-20250819">Sonnet 4.6</option>
+    </select>
+  </div>
+
+  <div id="status"></div>
+
+  <p class="hint">
+    Toggle ON, then browse normally. Text is blurred until processed.<br>
+    Right-click selected text for manual rewrite.<br>
+    Click any highlighted text to see the original.
+  </p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
