@@ -31,23 +31,13 @@
   </div>
 
   <label for="tone">Target tone</label>
-  <select id="tone">
-    <option value="neutral and calm">Neutral</option>
-    <option value="casual and friendly">Casual</option>
-    <option value="formal and respectful">Formal</option>
-    <option value="warm and encouraging">Warm</option>
-    <option value="explain like I'm five">ELI5</option>
-    <option value="humorous and witty">Humorous</option>
-    <option value="academic and precise">Academic</option>
-    <option value="concise and matter-of-fact">Concise</option>
-    <option value="poetic">Poetic</option>
-  </select>
+  <select id="tone"></select>
 
   <label for="sensitivity">Detection sensitivity</label>
   <select id="sensitivity">
-    <option value="low">Low — only hostile/hateful</option>
-    <option value="moderate" selected>Moderate — aggressive, demeaning</option>
-    <option value="high">High — any harshness</option>
+    <option value="low">Low — only strong clashes</option>
+    <option value="moderate" selected>Moderate — noticeable divergence</option>
+    <option value="high">High — any divergence</option>
   </select>
 
   <div id="model-group" class="hidden">
@@ -65,6 +55,13 @@
     Right-click selected text for manual rewrite.<br>
     Click any highlighted text to see the original.
   </p>
+
+  <details id="debug-section">
+    <summary>Debug log</summary>
+    <div id="debug-log"></div>
+    <button id="debug-refresh">Refresh</button>
+    <button id="debug-clear">Clear</button>
+  </details>
 
   <script src="popup.js"></script>
 </body>

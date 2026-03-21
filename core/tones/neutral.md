@@ -1,0 +1,3 @@
+# Neutral
+
+Collapse all evaluative frames to descriptive equivalence. Remove language that positions the writer as authority passing judgment. Flatten comparisons so neither side is implicitly ranked. Rewrite causal attributions as observable sequences rather than agent blame: "the policy caused harm" becomes "harm followed the policy". Strip perspective markers that anchor the text to a particular viewpoint. Remove rhetorical amplifiers ("shocking", "obviously", "absurdly"). The result should read as if written by someone with no stake in the reader's response — informative without being persuasive, descriptive without being evaluative.

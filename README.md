@@ -26,6 +26,23 @@ No build step required — load directly in Firefox as a temporary add-on:
 
 Uses your Claude Code subscription — no API key needed.
 
+To start the proxy automatically on login, run the install script once:
+
+```bash
+./install-proxy-service.sh
+```
+
+This installs a systemd user service that starts with your session and restarts on failure. To manage it:
+
+```bash
+systemctl --user status pharmakon-proxy
+systemctl --user restart pharmakon-proxy
+journalctl --user -u pharmakon-proxy -f   # logs
+systemctl --user disable pharmakon-proxy  # uninstall autostart
+```
+
+Or start it manually for the current session only:
+
 ```bash
 node proxy.js
 # or with options:

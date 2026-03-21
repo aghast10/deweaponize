@@ -11,7 +11,7 @@
     "<all_urls>"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["core/tone-engine.js", "background.js"]
   },
   "browser_action": {
     "default_popup": "popup/popup.html",
@@ -27,7 +27,17 @@
     },
     {
       "matches": ["<all_urls>"],
-      "js": ["sites.js", "content.js"],
+      "js": [
+        "surfaces/twitter.js",
+        "surfaces/reddit.js",
+        "surfaces/facebook.js",
+        "surfaces/youtube.js",
+        "surfaces/hackernews.js",
+        "surfaces/infovaticana.js",
+        "surfaces/default.js",
+        "surfaces/resolver.js",
+        "content.js"
+      ],
       "run_at": "document_start"
     }
   ],

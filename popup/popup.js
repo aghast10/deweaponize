@@ -10,27 +10,53 @@ const modelGroup = document.getElementById("model-group");
 const toggleBtn = document.getElementById("toggle-btn");
 const statusEl = document.getElementById("status");
 
-// Load saved settings
-browser.storage.local
-  .get({
+const TONE_SLUGS = [
+  "de-weaponize", "neutral", "casual", "formal", "warm",
+  "eli5", "humorous", "academic", "concise", "poetic", "nacional",
+];
+
+async function loadTones() {
+  const tones = await Promise.all(TONE_SLUGS.map(async (slug) => {
+    const url = browser.runtime.getURL(`core/tones/${slug}.md`);
+    const text = await fetch(url).then((r) => r.text());
+    const lines = text.trim().split("\n");
+    const label = lines[0].replace(/^#\s*/, "");
+    const value = lines.slice(1).join("\n").trim();
+    return { label, value };
+  }));
+
+  toneEl.innerHTML = "";
+  for (const { label, value } of tones) {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    toneEl.appendChild(opt);
+  }
+
+  return tones[0].value; // default: first tone
+}
+
+// Initialize: load tones then settings
+loadTones().then((defaultTone) => {
+  return browser.storage.local.get({
     apiKey: "",
-    tone: "neutral and calm",
+    tone: defaultTone,
     sensitivity: "moderate",
     model: "claude-haiku-4-5-20251001",
     enabled: false,
     provider: "local",
     proxyUrl: "http://127.0.0.1:7880",
-  })
-  .then((s) => {
-    providerEl.value = s.provider;
-    apiKeyEl.value = s.apiKey;
-    proxyUrlEl.value = s.proxyUrl;
-    toneEl.value = s.tone;
-    sensitivityEl.value = s.sensitivity;
-    modelEl.value = s.model;
-    setToggleState(s.enabled);
-    updateProviderUI(s.provider);
   });
+}).then((s) => {
+  providerEl.value = s.provider;
+  apiKeyEl.value = s.apiKey;
+  proxyUrlEl.value = s.proxyUrl;
+  toneEl.value = s.tone;
+  sensitivityEl.value = s.sensitivity;
+  modelEl.value = s.model;
+  setToggleState(s.enabled);
+  updateProviderUI(s.provider);
+});
 
 // Auto-save settings on change
 for (const el of [providerEl, apiKeyEl, proxyUrlEl, toneEl, sensitivityEl, modelEl]) {
@@ -96,3 +122,26 @@ function setToggleState(on) {
   toggleBtn.textContent = on ? "ON" : "OFF";
   toggleBtn.className = "toggle " + (on ? "on" : "off");
 }
+
+// Debug log
+const debugLogEl = document.getElementById("debug-log");
+const debugSection = document.getElementById("debug-section");
+
+async function refreshDebugLog() {
+  const resp = await browser.runtime.sendMessage({ type: "pharmakon-get-debug-log" });
+  if (!resp || !resp.log) {
+    debugLogEl.textContent = "(no entries)";
+    return;
+  }
+  debugLogEl.textContent = resp.log.length ? resp.log.join("\n") : "(no entries)";
+}
+
+document.getElementById("debug-refresh").addEventListener("click", refreshDebugLog);
+document.getElementById("debug-clear").addEventListener("click", async () => {
+  await browser.runtime.sendMessage({ type: "pharmakon-get-debug-log" }); // prime
+  debugLogEl.textContent = "(cleared — new entries will appear after next activity)";
+});
+
+debugSection.addEventListener("toggle", () => {
+  if (debugSection.open) refreshDebugLog();
+});

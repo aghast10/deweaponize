@@ -102,3 +102,42 @@ code {
   padding-top: 10px;
   line-height: 1.6;
 }
+
+#debug-section {
+  margin-top: 14px;
+  border-top: 1px solid #2a2a4a;
+  padding-top: 10px;
+}
+
+#debug-section summary {
+  font-size: 11px;
+  color: #666;
+  cursor: pointer;
+  user-select: none;
+}
+
+#debug-log {
+  margin-top: 8px;
+  font-size: 10px;
+  font-family: monospace;
+  color: #aaa;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #12122a;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+#debug-section button {
+  margin-top: 6px;
+  margin-right: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  background: #2a2a4a;
+  color: #aaa;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}

@@ -4,7 +4,7 @@
   const PROCESSED_ATTR = "data-pharmakon";
 
   let enabled = false;
-  let profile = null;
+  let surface = null;
   let queue = []; // elements waiting to be processed
   let batchTimer = null;
   let overlayEl = null;
@@ -59,7 +59,7 @@
   });
 
   // =========================================================================
-  // Boot — set up profile and observer
+  // Boot — resolve surface and set up observer
   // =========================================================================
 
   let observer = null;
@@ -67,7 +67,8 @@
   function boot() {
     if (observer) return; // already running
 
-    profile = window.__pharmakonGetProfile(location.hostname);
+    surface = window.__pharmakonResolveSurface(location.hostname);
+    if (!surface) return;
 
     // Wait for body to exist (we run at document_start)
     if (document.body) {
@@ -81,8 +82,10 @@
   }
 
   function startObserver() {
+    if (!surface.inbound) return; // no inbound config — nothing to observe
+
     const root =
-      (profile.container && document.querySelector(profile.container)) || document.body;
+      (surface.container && document.querySelector(surface.container)) || document.body;
 
     observer = new MutationObserver(onMutations);
     observer.observe(root, { childList: true, subtree: true });
@@ -93,7 +96,7 @@
   // =========================================================================
 
   function onMutations(mutations) {
-    if (!enabled) return;
+    if (!enabled || !surface.inbound) return;
 
     for (const mut of mutations) {
       for (const node of mut.addedNodes) {
@@ -106,14 +109,14 @@
   }
 
   function collectContentElements(root) {
+    const selector = surface.inbound.content;
+
     // Check if root itself matches
-    if (root.matches && root.matches(profile.content) && !root.hasAttribute(PROCESSED_ATTR)) {
+    if (root.matches && root.matches(selector) && !root.hasAttribute(PROCESSED_ATTR)) {
       enqueue(root);
     }
     // Check descendants
-    const els = root.querySelectorAll
-      ? root.querySelectorAll(profile.content)
-      : [];
+    const els = root.querySelectorAll ? root.querySelectorAll(selector) : [];
     for (const el of els) {
       if (!el.hasAttribute(PROCESSED_ATTR)) {
         enqueue(el);
@@ -131,7 +134,7 @@
 
   // Scan elements already on the page
   function scanExisting() {
-    if (!profile) return;
+    if (!surface || !surface.inbound) return;
     const root = document.body || document.documentElement;
     collectContentElements(root);
     if (queue.length > 0) scheduleBatch();
@@ -186,12 +189,12 @@
   }
 
   function extractText(el) {
-    // Get text content, skip child elements that match the "skip" selector
-    if (!profile.skip) return el.innerText || el.textContent || "";
+    const skip = surface.inbound && surface.inbound.skip;
+    if (!skip) return el.innerText || el.textContent || "";
 
     const clone = el.cloneNode(true);
-    for (const skip of clone.querySelectorAll(profile.skip)) {
-      skip.remove();
+    for (const s of clone.querySelectorAll(skip)) {
+      s.remove();
     }
     return clone.innerText || clone.textContent || "";
   }
@@ -233,7 +236,6 @@
 
     // Store original for toggle
     const originalHTML = el.innerHTML;
-    const originalText = el.innerText || el.textContent;
 
     // Apply each patch from the rewrite
     if (rewrite.patches && rewrite.patches.length > 0) {
@@ -250,34 +252,44 @@
   }
 
   function applyPatchToElement(el, searchStr, replacement) {
+    // Collect all text nodes with cumulative offsets into the element's full text
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-    const textNodes = [];
-    while (walker.nextNode()) textNodes.push(walker.currentNode);
-
-    for (const node of textNodes) {
-      const idx = node.textContent.indexOf(searchStr);
-      if (idx === -1) continue;
-
-      const before = node.textContent.slice(0, idx);
-      const after = node.textContent.slice(idx + searchStr.length);
-
-      const wrapper = document.createElement("span");
-      wrapper.className = "pharmakon-replaced";
-      wrapper.title = "Click to see original";
-      wrapper.textContent = replacement;
-      wrapper.dataset.pharmakonOriginalText = searchStr;
-      wrapper.addEventListener("click", toggleInlineRevert);
-
-      const parent = node.parentNode;
-      if (after) parent.insertBefore(document.createTextNode(after), node.nextSibling);
-      parent.insertBefore(wrapper, node.nextSibling);
-      if (before) {
-        node.textContent = before;
-      } else {
-        parent.removeChild(node);
-      }
-      break;
+    const nodes = [];
+    let pos = 0;
+    while (walker.nextNode()) {
+      const n = walker.currentNode;
+      nodes.push({ node: n, start: pos, end: pos + n.textContent.length });
+      pos += n.textContent.length;
     }
+
+    const fullText = nodes.map((n) => n.node.textContent).join("");
+
+    // Tolerate whitespace differences (innerText normalizes spaces; DOM nodes may have double spaces)
+    const escaped = searchStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const flexRegex = new RegExp(escaped.replace(/\s+/g, "\\s*"), "s");
+    const match = flexRegex.exec(fullText);
+    if (!match) return;
+
+    const matchStart = match.index;
+    const matchEnd = matchStart + match[0].length;
+
+    const startEntry = nodes.find((n) => matchStart >= n.start && matchStart < n.end);
+    const endEntry = nodes.find((n) => matchEnd > n.start && matchEnd <= n.end);
+    if (!startEntry || !endEntry) return;
+
+    const range = document.createRange();
+    range.setStart(startEntry.node, matchStart - startEntry.start);
+    range.setEnd(endEntry.node, matchEnd - endEntry.start);
+
+    const wrapper = document.createElement("span");
+    wrapper.className = "pharmakon-replaced";
+    wrapper.title = "Click to see original";
+    wrapper.textContent = replacement;
+    wrapper.dataset.pharmakonOriginalText = searchStr;
+    wrapper.addEventListener("click", toggleInlineRevert);
+
+    range.deleteContents();
+    range.insertNode(wrapper);
   }
 
   // =========================================================================

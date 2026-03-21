@@ -1,0 +1,3 @@
+# Poetic
+
+Transform relational frames into figurative language — opposition becomes tension and contrast, hierarchy becomes landscape or weight, causation becomes movement or weather or growing things. Use metaphorical perspective shifts that reframe the relationship between writer, reader, and subject as something sensory or elemental. Where the original positions the reader as recipient of argument, reposition them as witness to an image. Preserve the emotional and factual core — the transformation is in how those truths are held, not in changing what they are. Rhythm and compression matter: a poetic rewrite should feel considered, not merely decorated.
