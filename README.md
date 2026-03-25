@@ -18,11 +18,19 @@ A Firefox WebExtension that rewrites harsh or aggressive text on web pages into 
 
 ## Quick Install
 
+### Linux / macOS
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nicopi/deweaponize/main/install.sh | bash
 ```
 
-This clones the repo to `~/deweaponize`, installs the proxy as a systemd service, and starts it. Then load the extension in Firefox:
+### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/nicopi/deweaponize/main/install.ps1 | iex
+```
+
+This clones the repo, installs the proxy as a background service (systemd on Linux, Task Scheduler on Windows), and starts it. Then load the extension in Firefox:
 
 1. Open `about:debugging#/runtime/this-firefox`
 2. Click **Load Temporary Add-on**
@@ -30,7 +38,7 @@ This clones the repo to `~/deweaponize`, installs the proxy as a systemd service
 
 That's it — the proxy runs automatically on login and the extension is ready to use.
 
-> **Requirements:** [Node.js](https://nodejs.org/) and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`claude` CLI) must be installed. Linux/macOS only (uses systemd for the proxy service).
+> **Requirements:** [Node.js](https://nodejs.org/), [Git](https://git-scm.com/), and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`claude` CLI) must be installed.
 
 ## Usage
 
@@ -58,6 +66,15 @@ systemctl --user status dwz-proxy
 systemctl --user restart dwz-proxy
 journalctl --user -u dwz-proxy -f   # logs
 systemctl --user disable dwz-proxy  # uninstall
+```
+
+On **Windows**, the installer registers a Task Scheduler task instead:
+
+```powershell
+Get-ScheduledTask -TaskName DwzProxy          # status
+Stop-ScheduledTask -TaskName DwzProxy         # stop
+Start-ScheduledTask -TaskName DwzProxy        # start
+Unregister-ScheduledTask -TaskName DwzProxy   # uninstall
 ```
 
 Or start it manually:
@@ -92,6 +109,9 @@ background.js        Message router, LLM calls, context menu, sidebar toggle
 content.js           DOM patching, blur/reveal, click-toggle, error toast
 content.css          Styles: blur, highlights, toast overlay with retry
 proxy.js             Local HTTP proxy with /health endpoint and token auth
+install.sh           One-line installer (Linux/macOS — systemd)
+install.ps1          One-line installer (Windows — Task Scheduler)
+uninstall.ps1        Uninstaller (Windows)
 sidebar/             Sidebar panel (lean main UI)
 options/             Options page (full tab, advanced settings)
 core/                Platform-agnostic tone engine, prompts, and tone files
