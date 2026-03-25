@@ -40,12 +40,8 @@
     </p>
   </div>
 
-  <!-- Tone -->
-  <div class="control-group">
-    <label class="control-label" for="tone">Target tone</label>
-    <select id="tone" aria-describedby="tone-hint"></select>
-    <p id="tone-hint" class="control-hint">The relational frame strategy applied to text</p>
-  </div>
+  <!-- Tone (hidden — single tone only) -->
+  <select id="tone" hidden></select>
 
   <!-- Sensitivity -->
   <div class="control-group">
@@ -58,12 +54,21 @@
     <p id="sensitivity-hint" class="control-hint">How much divergence from the target tone triggers a rewrite</p>
   </div>
 
+  <!-- Debug log (collapsible) -->
+  <div class="debug-section">
+    <button id="debug-toggle" class="debug-toggle" aria-expanded="false">Debug log</button>
+    <div id="debug-panel" class="debug-panel" hidden>
+      <div class="debug-controls">
+        <button id="debug-refresh" class="debug-btn">Refresh</button>
+        <button id="debug-clear" class="debug-btn">Clear</button>
+      </div>
+      <div id="debug-log" class="debug-log" aria-live="polite">(click Refresh to load)</div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <div class="footer">
-    <div>
-      <button id="open-options" class="footer-link" aria-label="Open advanced settings">Settings</button>
-      <span class="footer-version" id="version-info"></span>
-    </div>
+    <span class="footer-version" id="version-info"></span>
     <span class="footer-hint">Ctrl+Shift+U to toggle</span>
   </div>
 

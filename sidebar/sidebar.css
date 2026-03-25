@@ -315,6 +315,65 @@ select:focus {
 }
 
 /* =============================================
+   Debug section
+   ============================================= */
+
+.debug-section {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.debug-toggle {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.debug-toggle:hover { color: var(--text-muted); }
+
+.debug-panel {
+  margin-top: 8px;
+}
+
+.debug-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.debug-btn {
+  padding: 3px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.debug-btn:hover { border-color: var(--accent); color: var(--text); }
+
+.debug-log {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* =============================================
    Utility
    ============================================= */
 

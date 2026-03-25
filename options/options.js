@@ -32,8 +32,7 @@ const PROVIDER_MODELS = {
 };
 
 const TONE_SLUGS = [
-  "de-weaponize", "neutral", "casual", "formal", "warm",
-  "eli5", "humorous", "academic", "concise", "poetic",
+  "de-weaponize",
 ];
 
 // =========================================================================

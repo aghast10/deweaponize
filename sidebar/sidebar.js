@@ -13,10 +13,12 @@ const setupCmd = document.getElementById("setup-cmd");
 const copyCmd = document.getElementById("copy-cmd");
 const setupTokenHint = document.getElementById("setup-token-hint");
 const versionInfo = document.getElementById("version-info");
+const debugToggle = document.getElementById("debug-toggle");
+const debugPanel = document.getElementById("debug-panel");
+const debugLogEl = document.getElementById("debug-log");
 
 const TONE_SLUGS = [
-  "de-weaponize", "neutral", "casual", "formal", "warm",
-  "eli5", "humorous", "academic", "concise", "poetic",
+  "de-weaponize",
 ];
 
 // =========================================================================
@@ -144,11 +146,25 @@ browser.storage.onChanged.addListener((changes) => {
 });
 
 // =========================================================================
-// Open options page
+// Debug log
 // =========================================================================
 
-document.getElementById("open-options").addEventListener("click", () => {
-  browser.runtime.openOptionsPage();
+debugToggle.addEventListener("click", () => {
+  const open = debugPanel.hidden;
+  debugPanel.hidden = !open;
+  debugToggle.setAttribute("aria-expanded", open ? "true" : "false");
+});
+
+async function refreshDebugLog() {
+  const resp = await browser.runtime.sendMessage({ type: "dwz-get-debug-log" });
+  if (!resp || !resp.log) { debugLogEl.textContent = "(no entries)"; return; }
+  debugLogEl.textContent = resp.log.length ? resp.log.join("\n") : "(no entries)";
+}
+
+document.getElementById("debug-refresh").addEventListener("click", refreshDebugLog);
+document.getElementById("debug-clear").addEventListener("click", async () => {
+  await browser.runtime.sendMessage({ type: "dwz-clear-debug-log" });
+  debugLogEl.textContent = "(cleared)";
 });
 
 // =========================================================================
