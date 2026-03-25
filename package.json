@@ -1,18 +1,21 @@
 {
   "name": "deweaponize",
   "version": "0.3.0",
-  "description": "Local proxy for the De-Weaponize browser extension — bridges to Claude CLI or Ollama",
+  "description": "Local proxy for the De-Weaponize browser extension — bridges to Claude, Codex, Gemini CLIs, Ollama, OpenAI, or Anthropic APIs",
   "type": "module",
   "bin": {
-    "deweaponize": "./proxy.js"
+    "deweaponize": "proxy.js"
   },
   "keywords": [
     "claude",
+    "codex",
+    "gemini",
+    "openai",
+    "ollama",
     "proxy",
     "tone",
     "rft",
-    "browser-extension",
-    "ollama"
+    "browser-extension"
   ],
   "author": "nicopi",
   "license": "MIT",

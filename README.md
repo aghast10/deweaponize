@@ -1,6 +1,8 @@
 # De-Weaponize
 
-A Firefox WebExtension that rewrites harsh or aggressive text on web pages into a tone of your choosing, using Claude. Uses Relational Frame Theory as its analytical lens — instead of swapping vocabulary, it detects and reshapes the underlying frames (opposition, hierarchy, comparison, causation, perspective) to match a target tone.
+A Firefox WebExtension that rewrites harsh or aggressive text on web pages into a tone of your choosing. Uses Relational Frame Theory as its analytical lens — instead of swapping vocabulary, it detects and reshapes the underlying frames (opposition, hierarchy, comparison, causation, perspective) to match a target tone.
+
+Works with multiple LLM providers: Claude, Codex, Gemini CLIs, Ollama, OpenAI API, and Anthropic API.
 
 ## Features
 
@@ -10,7 +12,7 @@ A Firefox WebExtension that rewrites harsh or aggressive text on web pages into 
 - **3 sensitivity levels** — low, moderate, high
 - **Click to toggle** — click any rewritten passage to switch between the original and adjusted text
 - **Multilingual** — preserves the language of the original text
-- **Two provider modes** — use a local proxy (no API key needed, uses your Claude subscription) or the Anthropic API directly
+- **Multiple providers** — local proxy (Claude, Codex, Gemini CLIs, Ollama, OpenAI, Anthropic APIs) or direct API calls from the browser
 - **Sidebar UI** — persistent sidebar panel with health indicator, onboarding wizard, and auto-save
 - **Options page** — full-tab settings for provider, API key, model, proxy URL, token management, and debug log
 - **Token auth** — shared secret between extension and proxy for security
@@ -30,7 +32,7 @@ Or run without installing:
 npx deweaponize
 ```
 
-> **Requirements:** [Node.js](https://nodejs.org/) 18+ and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`claude` CLI) must be installed.
+> **Requirements:** [Node.js](https://nodejs.org/) 18+ and at least one LLM backend (see below).
 
 ### 2. Load the extension in Firefox
 
@@ -55,20 +57,38 @@ git clone https://github.com/nicopi/deweaponize.git
 
 ### Local proxy (default)
 
-Uses your Claude Code subscription — no API key needed.
+The proxy supports multiple backends. Use `--list-backends` to see all options.
 
 ```bash
-deweaponize
-deweaponize --port 7880 --model claude-haiku-4-5-20251001
-deweaponize --backend ollama --model qwen2.5:7b
-deweaponize --token <TOKEN>   # get token from Settings page
+# CLI backends (use your existing subscription/installation)
+deweaponize                                            # Claude CLI (default)
+deweaponize --backend codex                            # OpenAI Codex CLI
+deweaponize --backend gemini --model gemini-2.5-pro    # Google Gemini CLI
+
+# API backends (require API keys via environment variables)
+deweaponize --backend ollama --model qwen2.5:7b        # Ollama (no key needed)
+deweaponize --backend openai --model gpt-4o-mini       # OpenAI API
+deweaponize --backend anthropic                        # Anthropic API
+
+# Options
+deweaponize --port 7880                                # Custom port
+deweaponize --token <TOKEN>                            # Token auth (get from Settings)
+deweaponize --list-backends                            # Show all backends
+```
+
+Custom binary paths and API base URLs via environment variables:
+
+```bash
+CLAUDE_PATH=/usr/local/bin/claude deweaponize
+CODEX_PATH=~/.local/bin/codex deweaponize --backend codex
+OPENAI_BASE_URL=https://openrouter.ai/api/v1 deweaponize --backend openai
 ```
 
 The sidebar shows a green dot when the proxy is connected and auto-detects when it comes online.
 
-### Anthropic API
+### Direct API (no proxy)
 
-Open the **Settings** page (link in sidebar footer), set **Provider** to `API key`, and enter your Anthropic API key.
+Open the **Settings** page (link in sidebar footer), set **Provider** to *Anthropic API* or *OpenAI API*, and enter your API key. The OpenAI provider also supports a custom base URL for OpenRouter, Azure, and other compatible APIs.
 
 ## Settings
 
@@ -76,8 +96,8 @@ Open the **Settings** page (link in sidebar footer), set **Provider** to `API ke
 |---------|---------|---------|
 | Tone | de-weaponize | 11 presets |
 | Sensitivity | moderate | low / moderate / high |
-| Model | claude-haiku-4-5-20251001 | Haiku / Sonnet |
-| Provider | local | local / api |
+| Model | claude-haiku-4-5-20251001 | Per-provider model list |
+| Provider | local | local / api / openai |
 | Proxy Token | auto-generated | shared secret for proxy auth |
 
 ## File Overview

@@ -5,6 +5,10 @@
 const providerEl = document.getElementById("provider");
 const apiKeyEl = document.getElementById("api-key");
 const apiKeyGroup = document.getElementById("api-key-group");
+const openaiKeyEl = document.getElementById("openai-key");
+const openaiKeyGroup = document.getElementById("openai-key-group");
+const openaiBaseUrlEl = document.getElementById("openai-base-url");
+const openaiBaseGroup = document.getElementById("openai-base-group");
 const proxyGroup = document.getElementById("proxy-group");
 const proxyUrlEl = document.getElementById("proxy-url");
 const toneEl = document.getElementById("tone");
@@ -12,6 +16,20 @@ const sensitivityEl = document.getElementById("sensitivity");
 const modelEl = document.getElementById("model");
 const tokenValue = document.getElementById("token-value");
 const saveBar = document.getElementById("save-bar");
+
+// Model options per provider
+const PROVIDER_MODELS = {
+  local: [], // proxy decides
+  api: [
+    { value: "claude-haiku-4-5-20251001", label: "Haiku 4.5 (fast, cheap)" },
+    { value: "claude-sonnet-4-6-20250819", label: "Sonnet 4.6" },
+  ],
+  openai: [
+    { value: "gpt-4o-mini", label: "GPT-4o mini (fast, cheap)" },
+    { value: "gpt-4o", label: "GPT-4o" },
+    { value: "o4-mini", label: "o4-mini (reasoning)" },
+  ],
+};
 
 const TONE_SLUGS = [
   "de-weaponize", "neutral", "casual", "formal", "warm",
@@ -66,6 +84,8 @@ async function loadTones() {
 loadTones().then((defaultTone) => {
   return browser.storage.local.get({
     apiKey: "",
+    openaiKey: "",
+    openaiBaseUrl: "https://api.openai.com/v1",
     tone: defaultTone,
     sensitivity: "moderate",
     model: "claude-haiku-4-5-20251001",
@@ -76,12 +96,14 @@ loadTones().then((defaultTone) => {
 }).then((s) => {
   providerEl.value = s.provider;
   apiKeyEl.value = s.apiKey;
+  openaiKeyEl.value = s.openaiKey;
+  openaiBaseUrlEl.value = s.openaiBaseUrl;
   proxyUrlEl.value = s.proxyUrl;
   toneEl.value = s.tone;
   sensitivityEl.value = s.sensitivity;
+  updateProviderUI(s.provider);
   modelEl.value = s.model;
   displayToken(s.proxyToken);
-  updateProviderUI(s.provider);
 });
 
 // Version info
@@ -96,12 +118,35 @@ document.getElementById("footer-version").textContent = `v${manifest.version}`;
 providerEl.addEventListener("change", () => updateProviderUI(providerEl.value));
 
 function updateProviderUI(provider) {
-  if (provider === "api") {
-    apiKeyGroup.classList.remove("hidden");
-    proxyGroup.classList.add("hidden");
+  // Show/hide groups based on provider
+  proxyGroup.classList.toggle("hidden", provider !== "local");
+  apiKeyGroup.classList.toggle("hidden", provider !== "api");
+  openaiKeyGroup.classList.toggle("hidden", provider !== "openai");
+  openaiBaseGroup.classList.toggle("hidden", provider !== "openai");
+
+  // Update model dropdown
+  const models = PROVIDER_MODELS[provider] || [];
+  const prevModel = modelEl.value;
+  modelEl.innerHTML = "";
+
+  if (models.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "(set by proxy)";
+    modelEl.appendChild(opt);
+    modelEl.disabled = true;
   } else {
-    apiKeyGroup.classList.add("hidden");
-    proxyGroup.classList.remove("hidden");
+    modelEl.disabled = false;
+    for (const m of models) {
+      const opt = document.createElement("option");
+      opt.value = m.value;
+      opt.textContent = m.label;
+      modelEl.appendChild(opt);
+    }
+    // Restore previous selection if it exists in new list
+    if (models.some((m) => m.value === prevModel)) {
+      modelEl.value = prevModel;
+    }
   }
 }
 
@@ -109,16 +154,21 @@ function updateProviderUI(provider) {
 // API key show/hide
 // =========================================================================
 
-document.getElementById("toggle-key-vis").addEventListener("click", () => {
-  const btn = document.getElementById("toggle-key-vis");
-  if (apiKeyEl.type === "password") {
-    apiKeyEl.type = "text";
-    btn.textContent = "Hide";
-  } else {
-    apiKeyEl.type = "password";
-    btn.textContent = "Show";
-  }
-});
+function setupKeyToggle(btnId, inputEl) {
+  document.getElementById(btnId).addEventListener("click", () => {
+    const btn = document.getElementById(btnId);
+    if (inputEl.type === "password") {
+      inputEl.type = "text";
+      btn.textContent = "Hide";
+    } else {
+      inputEl.type = "password";
+      btn.textContent = "Show";
+    }
+  });
+}
+
+setupKeyToggle("toggle-key-vis", apiKeyEl);
+setupKeyToggle("toggle-openai-key-vis", openaiKeyEl);
 
 // =========================================================================
 // Auto-save with debounce
@@ -134,6 +184,8 @@ function saveSettings() {
     browser.storage.local.set({
       provider: providerEl.value,
       apiKey: apiKeyEl.value.trim(),
+      openaiKey: openaiKeyEl.value.trim(),
+      openaiBaseUrl: openaiBaseUrlEl.value.trim() || "https://api.openai.com/v1",
       proxyUrl: proxyUrlEl.value.trim(),
       tone: toneEl.value,
       sensitivity: sensitivityEl.value,
@@ -144,7 +196,7 @@ function saveSettings() {
   }, 500);
 }
 
-for (const el of [providerEl, apiKeyEl, proxyUrlEl, toneEl, sensitivityEl, modelEl]) {
+for (const el of [providerEl, apiKeyEl, openaiKeyEl, openaiBaseUrlEl, proxyUrlEl, toneEl, sensitivityEl, modelEl]) {
   el.addEventListener("change", saveSettings);
   el.addEventListener("input", saveSettings);
 }

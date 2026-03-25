@@ -31,10 +31,11 @@
         <div class="control-group">
           <label class="control-label" for="provider">Provider</label>
           <select id="provider" aria-describedby="provider-hint">
-            <option value="local">Local proxy — Claude Code subscription</option>
-            <option value="api">API key — Anthropic direct</option>
+            <option value="local">Local proxy (claude, codex, ollama, …)</option>
+            <option value="api">Anthropic API (direct)</option>
+            <option value="openai">OpenAI API (direct)</option>
           </select>
-          <p id="provider-hint" class="control-hint">Local proxy uses your Claude Code subscription via a local server. API mode calls Anthropic directly.</p>
+          <p id="provider-hint" class="control-hint">Local proxy routes through any backend (run <code>deweaponize --list-backends</code> to see options). API modes call the provider directly from the browser.</p>
         </div>
 
         <div id="proxy-group" class="control-group">
@@ -51,6 +52,21 @@
           </div>
           <p id="apikey-hint" class="control-hint">Your Anthropic API key. Stored locally in browser storage.</p>
         </div>
+
+        <div id="openai-key-group" class="control-group hidden">
+          <label class="control-label" for="openai-key">OpenAI API Key</label>
+          <div class="input-with-toggle">
+            <input type="password" id="openai-key" placeholder="sk-..." aria-describedby="openai-key-hint">
+            <button id="toggle-openai-key-vis" class="toggle-visibility" aria-label="Show API key">Show</button>
+          </div>
+          <p id="openai-key-hint" class="control-hint">Your OpenAI API key. Stored locally in browser storage.</p>
+        </div>
+
+        <div id="openai-base-group" class="control-group hidden">
+          <label class="control-label" for="openai-base-url">OpenAI Base URL</label>
+          <input type="url" id="openai-base-url" value="https://api.openai.com/v1" aria-describedby="openai-base-hint">
+          <p id="openai-base-hint" class="control-hint">Override for OpenAI-compatible APIs (OpenRouter, Azure, etc.). Default: https://api.openai.com/v1</p>
+        </div>
       </div>
 
       <div class="section">
@@ -58,11 +74,8 @@
 
         <div class="control-group">
           <label class="control-label" for="model">Model</label>
-          <select id="model" aria-describedby="model-hint">
-            <option value="claude-haiku-4-5-20251001">Haiku 4.5 (fast, cheap)</option>
-            <option value="claude-sonnet-4-6-20250819">Sonnet 4.6</option>
-          </select>
-          <p id="model-hint" class="control-hint">Model used for API provider. Local proxy uses whatever model it was started with.</p>
+          <select id="model" aria-describedby="model-hint"></select>
+          <p id="model-hint" class="control-hint">Model used for direct API providers. Local proxy uses whatever model it was started with.</p>
         </div>
       </div>
 

@@ -65,15 +65,46 @@ async function callAnthropicAPI(systemPrompt, userContent, settings) {
   return data.content[0].text;
 }
 
+async function callOpenAIAPI(systemPrompt, userContent, settings) {
+  const baseUrl = (settings.openaiBaseUrl || "https://api.openai.com/v1").replace(/\/+$/, "");
+  const messages = [];
+  if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+  messages.push({ role: "user", content: userContent });
+
+  const resp = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${settings.openaiKey}`,
+    },
+    body: JSON.stringify({
+      model: settings.model,
+      messages,
+    }),
+  });
+
+  if (!resp.ok) {
+    const body = await resp.text();
+    throw new Error(`${resp.status}: ${body.slice(0, 200)}`);
+  }
+
+  const data = await resp.json();
+  return (data.choices[0].message.content || "").trim();
+}
+
 function llmTransport(systemPrompt, userContent, settings) {
   if (settings.provider === "local") {
     return callLocalProxy(systemPrompt, userContent, settings);
+  }
+  if (settings.provider === "openai") {
+    return callOpenAIAPI(systemPrompt, userContent, settings);
   }
   return callAnthropicAPI(systemPrompt, userContent, settings);
 }
 
 // Streaming variant — calls onDelta(text) for each chunk, returns full text.
-// Only used for the API provider; local proxy doesn't support streaming.
+// Used for API providers (Anthropic, OpenAI); local proxy doesn't support streaming.
+
 async function callAnthropicAPIStream(systemPrompt, userContent, settings, onDelta) {
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -97,6 +128,46 @@ async function callAnthropicAPIStream(systemPrompt, userContent, settings, onDel
     throw new Error(`${resp.status}: ${body.slice(0, 200)}`);
   }
 
+  return readSSEStream(resp, onDelta, (event) => {
+    if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
+      return event.delta.text;
+    }
+    return null;
+  });
+}
+
+async function callOpenAIAPIStream(systemPrompt, userContent, settings, onDelta) {
+  const baseUrl = (settings.openaiBaseUrl || "https://api.openai.com/v1").replace(/\/+$/, "");
+  const messages = [];
+  if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+  messages.push({ role: "user", content: userContent });
+
+  const resp = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${settings.openaiKey}`,
+    },
+    body: JSON.stringify({
+      model: settings.model,
+      messages,
+      stream: true,
+    }),
+  });
+
+  if (!resp.ok) {
+    const body = await resp.text();
+    throw new Error(`${resp.status}: ${body.slice(0, 200)}`);
+  }
+
+  return readSSEStream(resp, onDelta, (event) => {
+    const delta = event.choices?.[0]?.delta?.content;
+    return delta || null;
+  });
+}
+
+// Shared SSE stream reader. extractDelta(event) → string|null
+async function readSSEStream(resp, onDelta, extractDelta) {
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
   let sseBuffer = "";
@@ -116,14 +187,23 @@ async function callAnthropicAPIStream(systemPrompt, userContent, settings, onDel
       if (data === "[DONE]") return fullText;
       try {
         const event = JSON.parse(data);
-        if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
-          fullText += event.delta.text;
-          onDelta(event.delta.text);
+        const text = extractDelta(event);
+        if (text) {
+          fullText += text;
+          onDelta(text);
         }
       } catch {}
     }
   }
   return fullText;
+}
+
+// Pick the right streaming function for the current provider
+function callAPIStream(systemPrompt, userContent, settings, onDelta) {
+  if (settings.provider === "openai") {
+    return callOpenAIAPIStream(systemPrompt, userContent, settings, onDelta);
+  }
+  return callAnthropicAPIStream(systemPrompt, userContent, settings, onDelta);
 }
 
 // Extract complete JSON objects from a streaming buffer.
@@ -313,6 +393,8 @@ function batchEnd()   { _inflight = Math.max(0, _inflight - 1); refreshBadge(); 
 async function getSettings() {
   const defaults = {
     apiKey: "",
+    openaiKey: "",
+    openaiBaseUrl: "https://api.openai.com/v1",
     tone: "de-weaponized: disarm opposition, flatten hierarchy, replace blame with description, preserve all factual content",
     model: "claude-haiku-4-5-20251001",
     enabled: true,
@@ -326,7 +408,11 @@ async function getSettings() {
 
 function validateSettings(settings, tabId) {
   if (settings.provider === "api" && !settings.apiKey) {
-    notify(tabId, "error", "No API key set. Click the De-Weaponize icon to configure.");
+    notify(tabId, "error", "No Anthropic API key set. Open Settings to configure.");
+    return false;
+  }
+  if (settings.provider === "openai" && !settings.openaiKey) {
+    notify(tabId, "error", "No OpenAI API key set. Open Settings to configure.");
     return false;
   }
   return true;
@@ -410,13 +496,13 @@ async function handleBatch(tabId, texts, batchIndex, msgPrefix) {
   try {
     const engine = await enginePromise;
 
-    if (settings.provider === "api") {
+    if (settings.provider === "api" || settings.provider === "openai") {
       // Streaming path: parse JSON objects as they arrive, send each as a partial
       const { systemPrompt, userContent } = engine.buildDetectPrompt(uncachedTexts, settings);
       let jsonBuf = "";
       const seen = new Set();
 
-      await callAnthropicAPIStream(systemPrompt, userContent, settings, (delta) => {
+      await callAPIStream(systemPrompt, userContent, settings, (delta) => {
         const { items, remaining } = extractJsonObjects(jsonBuf, delta);
         jsonBuf = remaining;
         for (const raw of items) {

@@ -102,10 +102,15 @@ sensitivityEl.addEventListener("change", saveSettings);
 // =========================================================================
 
 toggleBtn.addEventListener("click", async () => {
-  const settings = await browser.storage.local.get({ enabled: true, provider: "local", apiKey: "" });
+  const settings = await browser.storage.local.get({ enabled: true, provider: "local", apiKey: "", openaiKey: "" });
 
   if (settings.provider === "api" && !settings.apiKey) {
-    statusText.textContent = "Set an API key in Settings first";
+    statusText.textContent = "Set an Anthropic API key in Settings first";
+    statusDot.className = "status-dot error";
+    return;
+  }
+  if (settings.provider === "openai" && !settings.openaiKey) {
+    statusText.textContent = "Set an OpenAI API key in Settings first";
     statusDot.className = "status-dot error";
     return;
   }
@@ -162,17 +167,27 @@ function startHealthPolling(settings) {
       proxyUrl: "http://127.0.0.1:7880",
       proxyToken: "",
       apiKey: "",
+      openaiKey: "",
     }).then(checkHealth);
   }, 5000);
 }
 
 async function checkHealth(settings) {
   if (settings.provider === "api") {
-    // API mode — just check if key is set
     if (settings.apiKey) {
-      setHealthOk("API key configured");
+      setHealthOk("Anthropic API configured");
     } else {
-      setHealthError("No API key — set one in Settings");
+      setHealthError("No Anthropic API key — set one in Settings");
+      setupWizard.classList.remove("visible");
+    }
+    return;
+  }
+
+  if (settings.provider === "openai") {
+    if (settings.openaiKey) {
+      setHealthOk("OpenAI API configured");
+    } else {
+      setHealthError("No OpenAI API key — set one in Settings");
       setupWizard.classList.remove("visible");
     }
     return;
