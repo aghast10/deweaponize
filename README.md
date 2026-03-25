@@ -16,13 +16,21 @@ A Firefox WebExtension that rewrites harsh or aggressive text on web pages into 
 - **Token auth** — shared secret between extension and proxy for security
 - **Smart error handling** — contextual error messages with retry buttons
 
-## Installation
+## Quick Install
 
-No build step required — load directly in Firefox as a temporary add-on:
+```bash
+curl -fsSL https://raw.githubusercontent.com/nicopi/deweaponize/main/install.sh | bash
+```
+
+This clones the repo to `~/deweaponize`, installs the proxy as a systemd service, and starts it. Then load the extension in Firefox:
 
 1. Open `about:debugging#/runtime/this-firefox`
 2. Click **Load Temporary Add-on**
-3. Select `manifest.json` from this directory
+3. Select `manifest.json` from the cloned directory
+
+That's it — the proxy runs automatically on login and the extension is ready to use.
+
+> **Requirements:** [Node.js](https://nodejs.org/) and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`claude` CLI) must be installed. Linux/macOS only (uses systemd for the proxy service).
 
 ## Usage
 
