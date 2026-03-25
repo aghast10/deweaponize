@@ -1,6 +1,6 @@
 # De-Weaponize
 
-A Firefox WebExtension that rewrites harsh or aggressive text on web pages into a tone of your choosing. Uses Relational Frame Theory as its analytical lens — instead of swapping vocabulary, it detects and reshapes the underlying frames (opposition, hierarchy, comparison, causation, perspective) to match a target tone.
+A Firefox WebExtension that rewrites harsh or aggressive text on web pages. Uses Relational Frame Theory as its analytical lens — instead of swapping vocabulary, it detects and reshapes the underlying frames (opposition, hierarchy, comparison, causation, perspective) to match a target tone.
 
 Works with multiple LLM providers: Claude, Codex, Gemini CLIs, Ollama, OpenAI API, and Anthropic API.
 
@@ -8,7 +8,6 @@ Works with multiple LLM providers: Claude, Codex, Gemini CLIs, Ollama, OpenAI AP
 
 - **Auto mode** — toggle ON in the sidebar to automatically detect and rewrite aggressive passages as you browse
 - **Manual mode** — select any text, right-click, and choose *De-Weaponize — Rewrite selection*
-- **11 tone presets** — de-weaponize, neutral, casual, formal, warm, ELI5, humorous, academic, concise, poetic, and more
 - **3 sensitivity levels** — low, moderate, high
 - **Click to toggle** — click any rewritten passage to switch between the original and adjusted text
 - **Multilingual** — preserves the language of the original text
@@ -94,7 +93,6 @@ Open the **Settings** page (link in sidebar footer), set **Provider** to *Anthro
 
 | Setting | Default | Options |
 |---------|---------|---------|
-| Tone | de-weaponize | 11 presets |
 | Sensitivity | moderate | low / moderate / high |
 | Model | claude-haiku-4-5-20251001 | Per-provider model list |
 | Provider | local | local / api / openai |
