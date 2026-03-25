@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pharmakon — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <!-- Progress bar for save feedback -->
+  <div id="save-bar" class="save-status"></div>
+
+  <!-- Header -->
+  <div class="options-header">
+    <img src="../icons/logo-1.png" alt="">
+    <h1>Pharmakon <span id="version" class="version"></span></h1>
+  </div>
+
+  <div class="options-container">
+    <!-- Tabs -->
+    <div class="tabs" role="tablist" aria-label="Settings sections">
+      <button class="tab-btn" role="tab" aria-selected="true" aria-controls="panel-general" id="tab-general">General</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-advanced" id="tab-advanced">Advanced</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-debug" id="tab-debug">Debug</button>
+    </div>
+
+    <!-- General panel -->
+    <div id="panel-general" class="tab-panel active" role="tabpanel" aria-labelledby="tab-general">
+      <div class="section">
+        <h2 class="section-title">Connection</h2>
+
+        <div class="control-group">
+          <label class="control-label" for="provider">Provider</label>
+          <select id="provider" aria-describedby="provider-hint">
+            <option value="local">Local proxy — Claude Code subscription</option>
+            <option value="api">API key — Anthropic direct</option>
+          </select>
+          <p id="provider-hint" class="control-hint">Local proxy uses your Claude Code subscription via a local server. API mode calls Anthropic directly.</p>
+        </div>
+
+        <div id="proxy-group" class="control-group">
+          <label class="control-label" for="proxy-url">Proxy URL</label>
+          <input type="url" id="proxy-url" value="http://127.0.0.1:7880" aria-describedby="proxy-hint">
+          <p id="proxy-hint" class="control-hint">Address of the local proxy server. Default: http://127.0.0.1:7880</p>
+        </div>
+
+        <div id="api-key-group" class="control-group hidden">
+          <label class="control-label" for="api-key">Anthropic API Key</label>
+          <div class="input-with-toggle">
+            <input type="password" id="api-key" placeholder="sk-ant-..." aria-describedby="apikey-hint">
+            <button id="toggle-key-vis" class="toggle-visibility" aria-label="Show API key">Show</button>
+          </div>
+          <p id="apikey-hint" class="control-hint">Your Anthropic API key. Stored locally in browser storage.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Model</h2>
+
+        <div class="control-group">
+          <label class="control-label" for="model">Model</label>
+          <select id="model" aria-describedby="model-hint">
+            <option value="claude-haiku-4-5-20251001">Haiku 4.5 (fast, cheap)</option>
+            <option value="claude-sonnet-4-6-20250819">Sonnet 4.6</option>
+          </select>
+          <p id="model-hint" class="control-hint">Model used for API provider. Local proxy uses whatever model it was started with.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Security</h2>
+
+        <div class="control-group">
+          <label class="control-label">Proxy Token</label>
+          <div class="token-row">
+            <span id="token-value" class="token-value">(none)</span>
+            <button id="copy-token" class="token-btn" aria-label="Copy token">Copy</button>
+            <button id="regen-token" class="token-btn" aria-label="Regenerate token">Regenerate</button>
+          </div>
+          <p class="control-hint">Shared secret between extension and proxy. Pass to proxy via <code>--token</code> flag. Regenerating will require restarting the proxy.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced panel -->
+    <div id="panel-advanced" class="tab-panel" role="tabpanel" aria-labelledby="tab-advanced">
+      <div class="section">
+        <h2 class="section-title">Behavior</h2>
+
+        <div class="control-group">
+          <label class="control-label" for="tone">Default tone</label>
+          <select id="tone" aria-describedby="adv-tone-hint"></select>
+          <p id="adv-tone-hint" class="control-hint">Same setting as the sidebar — change either place.</p>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="sensitivity">Detection sensitivity</label>
+          <select id="sensitivity" aria-describedby="adv-sens-hint">
+            <option value="low">Low — only strong clashes</option>
+            <option value="moderate" selected>Moderate — noticeable divergence</option>
+            <option value="high">High — any divergence</option>
+          </select>
+          <p id="adv-sens-hint" class="control-hint">Same setting as the sidebar — change either place.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug panel -->
+    <div id="panel-debug" class="tab-panel" role="tabpanel" aria-labelledby="tab-debug">
+      <div class="section">
+        <h2 class="section-title">Debug Log</h2>
+        <div class="debug-controls">
+          <button id="debug-refresh" class="debug-btn">Refresh</button>
+          <button id="debug-clear" class="debug-btn">Clear</button>
+        </div>
+        <div id="debug-log" class="debug-log" aria-live="polite" aria-label="Debug log output">(click Refresh to load)</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="options-footer">
+      Pharmakon <span id="footer-version"></span> — Relational frame translation engine
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

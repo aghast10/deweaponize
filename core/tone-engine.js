@@ -91,6 +91,14 @@ const PharmakonCore = (() => {
   function createEngine(transport, { detectPrompt, rewritePrompt }) {
     return {
       /**
+       * Build the detect prompt for a batch without invoking transport.
+       * Useful for adaptations that want to manage transport themselves (e.g. streaming).
+       */
+      buildDetectPrompt(texts, settings) {
+        return buildDetectPrompt(detectPrompt, texts, settings);
+      },
+
+      /**
        * Detect and rewrite tone issues in a batch of texts.
        * Returns an array of {index, rewritten, patches?} per item.
        */

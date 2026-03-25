@@ -11,11 +11,16 @@ async function callLocalProxy(systemPrompt, userContent, settings) {
   const url = (settings.proxyUrl || "http://127.0.0.1:7880") + "/message";
   dbg(`fetch → ${url}`);
 
+  const headers = { "Content-Type": "application/json" };
+  if (settings.proxyToken) {
+    headers["Authorization"] = `Bearer ${settings.proxyToken}`;
+  }
+
   let resp;
   try {
     resp = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ system: systemPrompt, prompt: userContent }),
     });
   } catch (fetchErr) {
@@ -67,6 +72,120 @@ function llmTransport(systemPrompt, userContent, settings) {
   return callAnthropicAPI(systemPrompt, userContent, settings);
 }
 
+// Streaming variant — calls onDelta(text) for each chunk, returns full text.
+// Only used for the API provider; local proxy doesn't support streaming.
+async function callAnthropicAPIStream(systemPrompt, userContent, settings, onDelta) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": settings.apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: settings.model,
+      max_tokens: 4096,
+      stream: true,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userContent }],
+    }),
+  });
+
+  if (!resp.ok) {
+    const body = await resp.text();
+    throw new Error(`${resp.status}: ${body.slice(0, 200)}`);
+  }
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let sseBuffer = "";
+  let fullText = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    sseBuffer += decoder.decode(value, { stream: true });
+
+    const lines = sseBuffer.split("\n");
+    sseBuffer = lines.pop(); // keep incomplete line
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const data = line.slice(6).trim();
+      if (data === "[DONE]") return fullText;
+      try {
+        const event = JSON.parse(data);
+        if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
+          fullText += event.delta.text;
+          onDelta(event.delta.text);
+        }
+      } catch {}
+    }
+  }
+  return fullText;
+}
+
+// Extract complete JSON objects from a streaming buffer.
+// Returns { items: parsed[], remaining: string } — call with accumulated buf + new delta.
+function extractJsonObjects(buf, newText) {
+  buf += newText;
+  const items = [];
+  let searchFrom = 0;
+
+  while (true) {
+    const start = buf.indexOf("{", searchFrom);
+    if (start === -1) break;
+
+    let depth = 0;
+    let inStr = false;
+    let escape = false;
+    let end = -1;
+
+    for (let j = start; j < buf.length; j++) {
+      const c = buf[j];
+      if (escape) { escape = false; continue; }
+      if (c === "\\" && inStr) { escape = true; continue; }
+      if (c === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (c === "{") depth++;
+      else if (c === "}") { depth--; if (depth === 0) { end = j; break; } }
+    }
+
+    if (end === -1) break; // incomplete object, wait for more data
+    try { items.push(JSON.parse(buf.slice(start, end + 1))); } catch {}
+    searchFrom = end + 1;
+  }
+
+  return { items, remaining: buf.slice(searchFrom) };
+}
+
+// Parse a single detect-response item (mirrors core's parseDetectResponse logic).
+function parseDetectItem(raw) {
+  if (raw.action === "rewrite" && Array.isArray(raw.patches)) {
+    return { rewritten: true, patches: raw.patches };
+  }
+  return { rewritten: null };
+}
+
+// --- Toggle sidebar on browser action click ---
+
+browser.browserAction.onClicked.addListener(() => {
+  browser.sidebarAction.toggle();
+});
+
+// --- Generate proxy token on first install ---
+
+browser.runtime.onInstalled.addListener(async (details) => {
+  if (details.reason === "install") {
+    const arr = new Uint8Array(24);
+    crypto.getRandomValues(arr);
+    const token = Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("");
+    await browser.storage.local.set({ proxyToken: token });
+    dbg("Generated proxy token on first install");
+  }
+});
+
 // --- Debug log ---
 
 const _debugLog = [];
@@ -96,7 +215,17 @@ browser.contextMenus.create({
   contexts: ["selection"],
 });
 
+browser.contextMenus.create({
+  id: "pharmakon-reader",
+  title: "Pharmakon — Reader Mode",
+  contexts: ["page"],
+});
+
 browser.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === "pharmakon-reader") {
+    browser.tabs.sendMessage(tab.id, { type: "pharmakon-reader-mode" });
+    return;
+  }
   if (info.menuItemId !== "pharmakon-rewrite") return;
 
   const settings = await getSettings();
@@ -119,13 +248,29 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 
 browser.runtime.onMessage.addListener((msg, sender) => {
   if (msg.type === "pharmakon-batch") {
-    handleBatch(sender.tab.id, msg.texts, msg.batchIndex);
+    handleBatch(sender.tab.id, msg.texts, msg.batchIndex, "pharmakon-batch");
+  }
+  if (msg.type === "pharmakon-reader-batch") {
+    handleBatch(sender.tab.id, msg.texts, msg.batchIndex, "pharmakon-reader-batch");
   }
   if (msg.type === "pharmakon-get-settings") {
     return getSettings();
   }
   if (msg.type === "pharmakon-get-debug-log") {
     return Promise.resolve({ log: _debugLog });
+  }
+  if (msg.type === "pharmakon-clear-debug-log") {
+    _debugLog.length = 0;
+    return Promise.resolve({ ok: true });
+  }
+});
+
+// Keyboard shortcut for reader mode
+browser.commands.onCommand.addListener((command) => {
+  if (command === "reader-mode") {
+    browser.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+      if (tab) browser.tabs.sendMessage(tab.id, { type: "pharmakon-reader-mode" });
+    });
   }
 });
 
@@ -170,10 +315,11 @@ async function getSettings() {
     apiKey: "",
     tone: "de-weaponized: disarm opposition, flatten hierarchy, replace blame with description, preserve all factual content",
     model: "claude-haiku-4-5-20251001",
-    enabled: false,
+    enabled: true,
     sensitivity: "moderate",
     provider: "local",
     proxyUrl: "http://127.0.0.1:7880",
+    proxyToken: "",
   };
   return browser.storage.local.get(defaults);
 }
@@ -217,7 +363,8 @@ function cacheSet(text, settings, result) {
 // Batch processing
 // =========================================================================
 
-async function handleBatch(tabId, texts, batchIndex) {
+async function handleBatch(tabId, texts, batchIndex, msgPrefix) {
+  msgPrefix = msgPrefix || "pharmakon-batch";
   const settings = await getSettings();
   if (!validateSettings(settings, tabId)) return;
 
@@ -239,9 +386,20 @@ async function handleBatch(tabId, texts, batchIndex) {
   const cachedCount = texts.length - uncachedTexts.length;
   dbg(`Batch #${batchIndex}: ${uncachedTexts.length} uncached + ${cachedCount} cached → ${settings.provider}`);
 
+  // Send cache hits immediately as partials — no need to wait for LLM
+  for (let i = 0; i < texts.length; i++) {
+    if (results[i]) {
+      browser.tabs.sendMessage(tabId, {
+        type: msgPrefix + "-partial",
+        batchIndex,
+        item: results[i],
+      });
+    }
+  }
+
   if (uncachedTexts.length === 0) {
     browser.tabs.sendMessage(tabId, {
-      type: "pharmakon-batch-result",
+      type: msgPrefix + "-result",
       results: { batchIndex, items: results },
     });
     return;
@@ -251,33 +409,76 @@ async function handleBatch(tabId, texts, batchIndex) {
 
   try {
     const engine = await enginePromise;
-    const items = await engine.detectBatch(uncachedTexts, settings);
-    batchEnd();
 
-    for (const item of items) {
-      const originalIndex = uncachedIndices[item.index];
-      const entry = item.rewritten
-        ? { rewritten: true, patches: item.patches }
-        : { rewritten: null };
-      cacheSet(uncachedTexts[item.index], settings, entry);
-      results[originalIndex] = { index: originalIndex, ...entry };
-      if (item.rewritten && item.patches) {
-        for (const p of item.patches) {
-          dbg(`  patch[${originalIndex}]: "${p.original || ""}" → "${p.rewritten || ""}"`);
+    if (settings.provider === "api") {
+      // Streaming path: parse JSON objects as they arrive, send each as a partial
+      const { systemPrompt, userContent } = engine.buildDetectPrompt(uncachedTexts, settings);
+      let jsonBuf = "";
+      const seen = new Set();
+
+      await callAnthropicAPIStream(systemPrompt, userContent, settings, (delta) => {
+        const { items, remaining } = extractJsonObjects(jsonBuf, delta);
+        jsonBuf = remaining;
+        for (const raw of items) {
+          if (typeof raw.index !== "number" || seen.has(raw.index)) continue;
+          seen.add(raw.index);
+          const originalIndex = uncachedIndices[raw.index];
+          if (originalIndex === undefined) continue;
+          const entry = parseDetectItem(raw);
+          cacheSet(uncachedTexts[raw.index], settings, entry);
+          results[originalIndex] = { index: originalIndex, ...entry };
+          if (entry.rewritten && entry.patches) {
+            for (const p of entry.patches) {
+              dbg(`  patch[${originalIndex}]: "${p.original || ""}" → "${p.rewritten || ""}"`);
+            }
+          }
+          browser.tabs.sendMessage(tabId, {
+            type: msgPrefix + "-partial",
+            batchIndex,
+            item: results[originalIndex],
+          });
         }
+      });
+
+      batchEnd();
+
+      // Fill any items the stream didn't emit (parse failures) as no-ops
+      for (let i = 0; i < uncachedIndices.length; i++) {
+        const originalIndex = uncachedIndices[i];
+        if (!results[originalIndex]) {
+          results[originalIndex] = { index: originalIndex, rewritten: null };
+        }
+      }
+    } else {
+      // Non-streaming path (local proxy): call LLM, then send all results at once
+      const items = await engine.detectBatch(uncachedTexts, settings);
+      batchEnd();
+
+      for (const item of items) {
+        const originalIndex = uncachedIndices[item.index];
+        const entry = item.rewritten
+          ? { rewritten: true, patches: item.patches }
+          : { rewritten: null };
+        cacheSet(uncachedTexts[item.index], settings, entry);
+        results[originalIndex] = { index: originalIndex, ...entry };
+        if (item.rewritten && item.patches) {
+          for (const p of item.patches) {
+            dbg(`  patch[${originalIndex}]: "${p.original || ""}" → "${p.rewritten || ""}"`);
+          }
+        }
+      }
+
+      // Fill gaps with no-op
+      for (let i = 0; i < results.length; i++) {
+        if (!results[i]) results[i] = { index: i, rewritten: null };
       }
     }
 
-    // Fill any gaps with no-op
-    for (let i = 0; i < results.length; i++) {
-      if (!results[i]) results[i] = { index: i, rewritten: null };
-    }
-
-    const rewrites = results.filter((r) => r.rewritten).length;
+    const rewrites = results.filter((r) => r && r.rewritten).length;
     dbg(`Batch #${batchIndex} done: ${rewrites}/${texts.length} rewritten`);
 
     browser.tabs.sendMessage(tabId, {
-      type: "pharmakon-batch-result",
+      type: msgPrefix + "-result",
       results: { batchIndex, items: results },
     });
   } catch (err) {
@@ -285,7 +486,7 @@ async function handleBatch(tabId, texts, batchIndex) {
     dbg(`Batch #${batchIndex} ERROR: ${err.message}`);
     const fallback = texts.map((_, i) => ({ index: i, rewritten: null }));
     browser.tabs.sendMessage(tabId, {
-      type: "pharmakon-batch-result",
+      type: msgPrefix + "-result",
       results: { batchIndex, items: fallback },
     });
     notify(tabId, "error", "API error: " + err.message);

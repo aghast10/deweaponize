@@ -1,5 +1,6 @@
 (() => {
-  const BATCH_DELAY_MS = 800; // debounce before sending a batch to the API
+  const BATCH_DELAY_MS = 200;        // debounce for subsequent batches (new content)
+  const FIRST_BATCH_DELAY_MS = 1500; // longer wait on first batch so page finishes rendering
   const MAX_BATCH_SIZE = 20; // max items per API call
   const PROCESSED_ATTR = "data-pharmakon";
 
@@ -7,6 +8,7 @@
   let surface = null;
   let queue = []; // elements waiting to be processed
   let batchTimer = null;
+  let firstBatchSent = false;
   let overlayEl = null;
   let originalRange = null; // for manual selection mode
 
@@ -14,7 +16,7 @@
   // Initialisation — runs at document_start
   // =========================================================================
 
-  browser.storage.local.get({ enabled: false }).then((s) => {
+  browser.storage.local.get({ enabled: true }).then((s) => {
     enabled = s.enabled;
     if (enabled) {
       document.documentElement.classList.add("pharmakon-active");
@@ -36,6 +38,10 @@
         }
         break;
 
+      case "pharmakon-batch-partial":
+        handlePartialResult(msg.batchIndex, msg.item);
+        break;
+
       case "pharmakon-batch-result":
         handleBatchResult(msg.results);
         break;
@@ -55,6 +61,31 @@
       case "pharmakon-loading":
         showOverlay(msg.text || "Processing…");
         break;
+
+      // --- Reader Mode ---
+      case "pharmakon-reader-mode":
+        if (window.__pharmakonReader && !window.__pharmakonReader.active) {
+          const surf = window.__pharmakonResolveSurface
+            ? window.__pharmakonResolveSurface(location.hostname)
+            : null;
+          const data = window.__pharmakonExtractForReader
+            ? window.__pharmakonExtractForReader(surf)
+            : { type: "feed", title: document.title, items: [] };
+          window.__pharmakonReader.enter(data);
+        }
+        break;
+
+      case "pharmakon-reader-batch-result":
+        if (window.__pharmakonReader && window.__pharmakonReader.active) {
+          window.__pharmakonReader.handleBatchResult(msg.results);
+        }
+        break;
+
+      case "pharmakon-reader-batch-partial":
+        if (window.__pharmakonReader && window.__pharmakonReader.active) {
+          window.__pharmakonReader.handlePartialResult(msg.batchIndex, msg.item);
+        }
+        break;
     }
   });
 
@@ -73,12 +104,17 @@
     // Wait for body to exist (we run at document_start)
     if (document.body) {
       startObserver();
+      scanExisting();
     } else {
       document.addEventListener("DOMContentLoaded", () => {
         startObserver();
         scanExisting();
       });
     }
+
+    // Re-scan after page has had time to finish rendering dynamic content.
+    // Catches elements that were still loading when the initial scan ran.
+    setTimeout(scanExisting, 2000);
   }
 
   function startObserver() {
@@ -96,12 +132,13 @@
   // =========================================================================
 
   function onMutations(mutations) {
-    if (!enabled || !surface.inbound) return;
+    if (!enabled) return;
 
     for (const mut of mutations) {
       for (const node of mut.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
-        collectContentElements(node);
+        removeAlarmingIn(node);
+        if (surface && surface.inbound) collectContentElements(node);
       }
     }
 
@@ -127,17 +164,70 @@
   function enqueue(el) {
     // Mark immediately so we don't double-queue
     el.setAttribute(PROCESSED_ATTR, "pending");
-    // Apply blur to this element until it's processed
     el.classList.add("pharmakon-pending");
+    el.addEventListener("click", onPendingClick);
     queue.push(el);
+  }
+
+  function onPendingClick(e) {
+    const el = e.currentTarget;
+    if (el.classList.contains("pharmakon-pending")) {
+      el.classList.toggle("pharmakon-peeking");
+    }
   }
 
   // Scan elements already on the page
   function scanExisting() {
-    if (!surface || !surface.inbound) return;
     const root = document.body || document.documentElement;
+    removeAlarmingIn(root);
+    if (!surface || !surface.inbound) return;
     collectContentElements(root);
     if (queue.length > 0) scheduleBatch();
+  }
+
+  // =========================================================================
+  // Alarming element removal
+  // =========================================================================
+
+  const ALARMING_ATTR = "data-pharmakon-cleaned";
+
+  const ALARMING_TEXT = /^(en\s+directo|breaking(\s+news)?|última\s+hora|urgente|en\s+vivo|directo|live(\s+now)?|alert|noticia\s+urgente|última\s+hora\s+informativa)$/i;
+
+  function isRedish(color) {
+    const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!m) return false;
+    const r = +m[1], g = +m[2], b = +m[3];
+    return r > 160 && g < 80 && b < 80;
+  }
+
+  function isAlarming(el) {
+    if (el.hasAttribute(ALARMING_ATTR)) return false;
+    if (el.children.length > 3) return false; // too structural
+    const text = el.textContent.trim();
+    if (text.length === 0 || text.length > 60) return false;
+    if (ALARMING_TEXT.test(text)) return true;
+    // Red color or background (only check small elements to avoid performance hit)
+    const s = window.getComputedStyle(el);
+    if (isRedish(s.color) || isRedish(s.backgroundColor)) return true;
+    return false;
+  }
+
+  function removeAlarmingIn(root) {
+    if (!enabled) return;
+    const candidates = root.querySelectorAll
+      ? root.querySelectorAll("a, span, em, strong, b, small, mark, div, li, p")
+      : [];
+    for (const el of candidates) {
+      if (isAlarming(el)) {
+        el.setAttribute(ALARMING_ATTR, "true");
+        el.style.display = "none";
+      }
+    }
+    // Check root itself
+    if (root !== document.body && root.tagName && isAlarming(root)) {
+      root.setAttribute(ALARMING_ATTR, "true");
+      root.style.display = "none";
+    }
   }
 
   // =========================================================================
@@ -146,12 +236,18 @@
 
   function scheduleBatch() {
     if (batchTimer) clearTimeout(batchTimer);
-    batchTimer = setTimeout(flushBatch, BATCH_DELAY_MS);
+    const delay = firstBatchSent ? BATCH_DELAY_MS : FIRST_BATCH_DELAY_MS;
+    batchTimer = setTimeout(flushBatch, delay);
   }
 
   function flushBatch() {
     batchTimer = null;
     if (queue.length === 0) return;
+
+    // Sort entire queue by document order (top → bottom) before taking a slice
+    queue.sort((a, b) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
 
     // Take up to MAX_BATCH_SIZE items
     const batch = queue.splice(0, MAX_BATCH_SIZE);
@@ -161,14 +257,17 @@
     for (const el of batch) {
       const text = extractText(el);
       if (text.length < 15) {
-        // Too short to be meaningful, just reveal it
-        revealElement(el, null);
+        // Too short to be meaningful — unblur immediately, no LLM call
+        el.classList.remove("pharmakon-pending", "pharmakon-peeking");
+        el.removeEventListener("click", onPendingClick);
+        el.setAttribute(PROCESSED_ATTR, "done");
         continue;
       }
       items.push({ el, text });
     }
 
     if (items.length === 0) {
+      // All items were short text — no LLM call needed, proceed to next batch immediately
       if (queue.length > 0) scheduleBatch();
       return;
     }
@@ -178,14 +277,16 @@
     window.__pharmakonPendingBatch = (window.__pharmakonPendingBatch || []).concat([pendingBatch]);
 
     // Send to background
+    firstBatchSent = true;
     browser.runtime.sendMessage({
       type: "pharmakon-batch",
       texts: items.map((it) => it.text),
       batchIndex: (window.__pharmakonPendingBatch || []).length - 1,
     });
 
-    // If there's more in the queue, schedule another flush
-    if (queue.length > 0) scheduleBatch();
+    // Next batch is triggered from handleBatchResult to preserve top→bottom order.
+    // (Sending all batches at once lets the smallest/fastest finish first, which is
+    // usually the bottom of the page.)
   }
 
   function extractText(el) {
@@ -217,22 +318,37 @@
       }
     }
 
-    // Process each element in the batch
+    // Process each element in the batch; null = already handled by a partial
     for (let i = 0; i < batch.length; i++) {
       const el = batch[i];
+      if (!el) continue;
       const rewrite = rewrites.get(i);
       revealElement(el, rewrite);
     }
 
     // Clean up
     batches[results.batchIndex] = null;
+
+    // Trigger the next batch now that this one is done (preserves top→bottom order)
+    if (queue.length > 0) scheduleBatch();
+  }
+
+  function handlePartialResult(batchIndex, item) {
+    const batches = window.__pharmakonPendingBatch || [];
+    const batch = batches[batchIndex];
+    if (!batch) return;
+    const el = batch[item.index];
+    if (!el) return; // null = already handled
+    batch[item.index] = null; // mark done so batch-result skips it
+    revealElement(el, item);
   }
 
   function revealElement(el, rewrite) {
-    el.classList.remove("pharmakon-pending");
+    el.classList.remove("pharmakon-pending", "pharmakon-peeking");
+    el.removeEventListener("click", onPendingClick);
     el.setAttribute(PROCESSED_ATTR, "done");
 
-    if (!rewrite) return; // no change needed
+    if (!rewrite || !rewrite.rewritten) return; // no change needed
 
     // Store original for toggle
     const originalHTML = el.innerHTML;
@@ -360,8 +476,51 @@
     hideOverlay();
     overlayEl = document.createElement("div");
     overlayEl.className = "pharmakon-overlay" + (isError ? " pharmakon-error" : "");
-    overlayEl.textContent = text;
+
+    const textSpan = document.createElement("span");
+    textSpan.className = "pharmakon-overlay-text";
+    textSpan.textContent = friendlyError(text, isError);
+    overlayEl.appendChild(textSpan);
+
+    if (isError) {
+      const retryBtn = document.createElement("button");
+      retryBtn.className = "pharmakon-overlay-retry";
+      retryBtn.textContent = "Retry";
+      retryBtn.addEventListener("click", () => {
+        hideOverlay();
+        scanExisting();
+      });
+      overlayEl.appendChild(retryBtn);
+
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "pharmakon-overlay-close";
+      closeBtn.textContent = "\u00d7";
+      closeBtn.setAttribute("aria-label", "Dismiss");
+      closeBtn.addEventListener("click", hideOverlay);
+      overlayEl.appendChild(closeBtn);
+    }
+
     document.body.appendChild(overlayEl);
+  }
+
+  function friendlyError(msg, isError) {
+    if (!isError) return msg;
+    if (/fetch|ECONNREFUSED|Failed to fetch|NetworkError/i.test(msg)) {
+      return "Proxy unreachable — is it running? Check the sidebar for setup instructions.";
+    }
+    if (/401|token|unauthorized/i.test(msg)) {
+      return "Authentication failed — token mismatch. Check Settings.";
+    }
+    if (/429|rate.?limit/i.test(msg)) {
+      return "Rate limited — too many requests. Wait a moment and retry.";
+    }
+    if (/403|forbidden/i.test(msg)) {
+      return "Access denied — check your API key in Settings.";
+    }
+    if (/500|internal.?server/i.test(msg)) {
+      return "Server error — the proxy or API returned an internal error.";
+    }
+    return msg;
   }
 
   function hideOverlay() {

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <img src="../icons/logo-1.png" alt="" class="header-logo">
+      <div>
+        <div class="header-title">Pharmakon</div>
+        <div class="header-subtitle">Relational frame translation</div>
+      </div>
+    </div>
+    <button id="toggle-btn" class="toggle off" role="switch" aria-checked="false" aria-label="Toggle Pharmakon">OFF</button>
+  </div>
+
+  <!-- Status bar with health indicator -->
+  <div class="status-bar" role="status" aria-live="polite">
+    <span id="status-dot" class="status-dot" aria-hidden="true"></span>
+    <span id="status-text" class="status-text">Checking connection...</span>
+    <span id="save-flash" class="status-save" aria-live="polite"></span>
+  </div>
+
+  <!-- Setup wizard (shown when proxy unreachable) -->
+  <div id="setup-wizard" class="setup-wizard" role="alert">
+    <h2>Setup required</h2>
+    <p>Start the local proxy to connect Pharmakon to your Claude subscription:</p>
+    <div class="setup-command">
+      <code id="setup-cmd">node proxy.js</code>
+      <button id="copy-cmd" class="copy-btn" aria-label="Copy command">Copy</button>
+    </div>
+    <p class="setup-hint">
+      Run this in the pharmakon folder. The sidebar will auto-detect when the proxy comes online.
+    </p>
+    <p class="setup-hint" id="setup-token-hint" style="display:none; margin-top: 6px;">
+      Token auth is enabled for security.
+    </p>
+  </div>
+
+  <!-- Tone -->
+  <div class="control-group">
+    <label class="control-label" for="tone">Target tone</label>
+    <select id="tone" aria-describedby="tone-hint"></select>
+    <p id="tone-hint" class="control-hint">The relational frame strategy applied to text</p>
+  </div>
+
+  <!-- Sensitivity -->
+  <div class="control-group">
+    <label class="control-label" for="sensitivity">Detection sensitivity</label>
+    <select id="sensitivity" aria-describedby="sensitivity-hint">
+      <option value="low">Low — only strong clashes</option>
+      <option value="moderate" selected>Moderate — noticeable divergence</option>
+      <option value="high">High — any divergence</option>
+    </select>
+    <p id="sensitivity-hint" class="control-hint">How much divergence from the target tone triggers a rewrite</p>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div>
+      <button id="open-options" class="footer-link" aria-label="Open advanced settings">Settings</button>
+      <span class="footer-version" id="version-info"></span>
+    </div>
+    <span class="footer-hint">Ctrl+Shift+U to toggle</span>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>

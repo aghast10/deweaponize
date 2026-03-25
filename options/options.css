@@ -1,0 +1,318 @@
+/* =============================================
+   CSS Custom Properties — Pharmakon Theme
+   ============================================= */
+
+:root {
+  --bg-0: #0f0f1e;
+  --bg-1: #1a1a2e;
+  --bg-2: #16213e;
+  --surface: #1e2d52;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-muted: #888;
+  --text-dim: #666;
+  --accent: #648cff;
+  --accent-hover: #7da1ff;
+  --success: #4caf50;
+  --warning: #f0a500;
+  --error: #e55;
+  --radius: 6px;
+  --font: 14px/1.5 system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  font: var(--font);
+  background: var(--bg-0);
+  color: var(--text);
+  padding: 0;
+}
+
+/* =============================================
+   Layout
+   ============================================= */
+
+.options-header {
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.options-header img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.options-header h1 {
+  font-size: 20px;
+  color: #fff;
+}
+
+.options-header .version {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-left: 8px;
+}
+
+.options-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+/* =============================================
+   Tabs
+   ============================================= */
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+}
+
+.tab-btn[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* =============================================
+   Sections & Controls
+   ============================================= */
+
+.section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.control-group {
+  margin-bottom: 16px;
+}
+
+.control-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.control-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="url"],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+/* API key field with show/hide toggle */
+.input-with-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.input-with-toggle input {
+  flex: 1;
+}
+
+.toggle-visibility {
+  padding: 8px 12px;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toggle-visibility:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Token display */
+.token-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+}
+
+.token-value {
+  flex: 1;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.token-btn {
+  padding: 4px 10px;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.token-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* =============================================
+   Debug log
+   ============================================= */
+
+.debug-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.debug-btn {
+  padding: 6px 12px;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.debug-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.debug-log {
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--bg-1);
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+/* =============================================
+   Status bar (save feedback)
+   ============================================= */
+
+.save-status {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+  z-index: 1000;
+}
+
+.save-status.saving {
+  transform: scaleX(0.6);
+}
+
+.save-status.saved {
+  transform: scaleX(1);
+  transition: transform 0.2s, opacity 0.5s 0.3s;
+  opacity: 0;
+}
+
+/* =============================================
+   Footer
+   ============================================= */
+
+.options-footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* =============================================
+   Utility
+   ============================================= */
+
+.hidden { display: none !important; }

@@ -1,14 +1,18 @@
 /* =============================================
-   Blur pending elements BEFORE they're readable.
-   The class is added per-element as soon as it's
-   detected, removed once the API result arrives.
+   Blur pending elements until API result arrives
    ============================================= */
 
 .pharmakon-pending {
   filter: blur(6px) !important;
   user-select: none !important;
-  pointer-events: none !important;
+  cursor: pointer !important;
   transition: filter 0.25s ease-out;
+}
+
+/* User clicked to peek at original blurred content */
+.pharmakon-pending.pharmakon-peeking {
+  filter: none !important;
+  user-select: auto !important;
 }
 
 /* =============================================
@@ -26,12 +30,51 @@
   font: 14px/1.4 system-ui, sans-serif;
   z-index: 2147483647;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  max-width: 360px;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   animation: pharmakon-fadein 0.15s ease-out;
 }
 
 .pharmakon-overlay.pharmakon-error {
   background: #6b2020;
+  border-left: 3px solid #e55;
+}
+
+.pharmakon-overlay-text {
+  flex: 1;
+}
+
+.pharmakon-overlay-retry {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pharmakon-overlay-retry:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.pharmakon-overlay-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.pharmakon-overlay-close:hover {
+  color: #fff;
 }
 
 /* =============================================

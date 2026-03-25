@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Pharmakon",
-  "version": "0.2.0",
-  "description": "Rewrites text on web pages in your chosen tone using Claude.",
+  "version": "0.3.0",
+  "description": "Relational frame translation engine — transforms the implicit positioning between writer, reader, and subject in text.",
   "permissions": [
     "contextMenus",
     "activeTab",
@@ -13,11 +13,24 @@
   "background": {
     "scripts": ["core/tone-engine.js", "background.js"]
   },
-  "browser_action": {
-    "default_popup": "popup/popup.html",
+  "sidebar_action": {
+    "default_title": "Pharmakon",
+    "default_panel": "sidebar/sidebar.html",
     "default_icon": {
-      "48": "icons/icon-48.svg"
+      "48": "icons/logo-1.png",
+      "96": "icons/logo-1.png"
     }
+  },
+  "browser_action": {
+    "default_icon": {
+      "48": "icons/logo-1.png",
+      "96": "icons/logo-1.png"
+    },
+    "default_title": "Toggle Pharmakon sidebar"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
   },
   "content_scripts": [
     {
@@ -28,21 +41,35 @@
     {
       "matches": ["<all_urls>"],
       "js": [
+        "vendor/Readability.js",
         "surfaces/twitter.js",
         "surfaces/reddit.js",
         "surfaces/facebook.js",
         "surfaces/youtube.js",
         "surfaces/hackernews.js",
         "surfaces/infovaticana.js",
+        "surfaces/reuters.js",
         "surfaces/default.js",
         "surfaces/resolver.js",
+        "reader/extractor.js",
+        "reader/renderer.js",
         "content.js"
       ],
       "run_at": "document_start"
     }
   ],
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": { "default": "Ctrl+Shift+U" },
+      "description": "Toggle Pharmakon sidebar"
+    },
+    "reader-mode": {
+      "suggested_key": { "default": "Alt+Shift+R" },
+      "description": "Activate Pharmakon Reader Mode"
+    }
+  },
   "icons": {
-    "48": "icons/icon-48.svg",
-    "96": "icons/icon-96.svg"
+    "48": "icons/logo-1.png",
+    "96": "icons/logo-1.png"
   }
 }
