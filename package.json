@@ -1,6 +1,6 @@
 {
   "name": "deweaponize",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Local proxy for the De-Weaponize browser extension — bridges to Claude, Codex, Gemini CLIs, Ollama, OpenAI, or Anthropic APIs",
   "type": "module",
   "bin": {
