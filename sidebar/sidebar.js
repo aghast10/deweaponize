@@ -16,7 +16,7 @@ const versionInfo = document.getElementById("version-info");
 
 const TONE_SLUGS = [
   "de-weaponize", "neutral", "casual", "formal", "warm",
-  "eli5", "humorous", "academic", "concise", "poetic", "nacional",
+  "eli5", "humorous", "academic", "concise", "poetic",
 ];
 
 // =========================================================================
