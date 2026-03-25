@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "De-Weaponize",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Relational frame translation engine — transforms the implicit positioning between writer, reader, and subject in text.",
   "permissions": [
     "contextMenus",
