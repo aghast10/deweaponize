@@ -15,6 +15,12 @@
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { request as httpRequest } from "node:http";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PKG = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"));
 
 const PORT    = parseInt(process.argv.find((_, i, a) => a[i - 1] === "--port") || "7880", 10);
 const BACKEND = process.argv.find((_, i, a) => a[i - 1] === "--backend") || "claude";
@@ -40,7 +46,7 @@ const server = createServer(async (req, res) => {
       authenticated: authed,
       backend: BACKEND,
       model: MODEL,
-      version: "0.2.0",
+      version: PKG.version,
     }));
     return;
   }

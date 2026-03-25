@@ -1,0 +1,29 @@
+{
+  "name": "deweaponize",
+  "version": "0.3.0",
+  "description": "Local proxy for the De-Weaponize browser extension — bridges to Claude CLI or Ollama",
+  "type": "module",
+  "bin": {
+    "deweaponize": "./proxy.js"
+  },
+  "keywords": [
+    "claude",
+    "proxy",
+    "tone",
+    "rft",
+    "browser-extension",
+    "ollama"
+  ],
+  "author": "nicopi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicopi/deweaponize.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "proxy.js"
+  ]
+}

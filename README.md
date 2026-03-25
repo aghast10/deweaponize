@@ -18,27 +18,31 @@ A Firefox WebExtension that rewrites harsh or aggressive text on web pages into 
 
 ## Quick Install
 
-### Linux / macOS
+### 1. Install the proxy
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nicopi/deweaponize/main/install.sh | bash
+npm install -g deweaponize
 ```
 
-### Windows (PowerShell)
+Or run without installing:
 
-```powershell
-irm https://raw.githubusercontent.com/nicopi/deweaponize/main/install.ps1 | iex
+```bash
+npx deweaponize
 ```
 
-This clones the repo, installs the proxy as a background service (systemd on Linux, Task Scheduler on Windows), and starts it. Then load the extension in Firefox:
+> **Requirements:** [Node.js](https://nodejs.org/) 18+ and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`claude` CLI) must be installed.
+
+### 2. Load the extension in Firefox
+
+Clone the repo and load it as a temporary add-on:
+
+```bash
+git clone https://github.com/nicopi/deweaponize.git
+```
 
 1. Open `about:debugging#/runtime/this-firefox`
 2. Click **Load Temporary Add-on**
 3. Select `manifest.json` from the cloned directory
-
-That's it — the proxy runs automatically on login and the extension is ready to use.
-
-> **Requirements:** [Node.js](https://nodejs.org/), [Git](https://git-scm.com/), and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`claude` CLI) must be installed.
 
 ## Usage
 
@@ -53,36 +57,11 @@ That's it — the proxy runs automatically on login and the extension is ready t
 
 Uses your Claude Code subscription — no API key needed.
 
-To start the proxy automatically on login, run the install script once:
-
 ```bash
-./install-proxy-service.sh
-```
-
-This installs a systemd user service that starts with your session and restarts on failure. To manage it:
-
-```bash
-systemctl --user status dwz-proxy
-systemctl --user restart dwz-proxy
-journalctl --user -u dwz-proxy -f   # logs
-systemctl --user disable dwz-proxy  # uninstall
-```
-
-On **Windows**, the installer registers a Task Scheduler task instead:
-
-```powershell
-Get-ScheduledTask -TaskName DwzProxy          # status
-Stop-ScheduledTask -TaskName DwzProxy         # stop
-Start-ScheduledTask -TaskName DwzProxy        # start
-Unregister-ScheduledTask -TaskName DwzProxy   # uninstall
-```
-
-Or start it manually:
-
-```bash
-node proxy.js
-node proxy.js --port 7880 --model claude-haiku-4-5-20251001
-node proxy.js --token <TOKEN>   # get token from Settings page
+deweaponize
+deweaponize --port 7880 --model claude-haiku-4-5-20251001
+deweaponize --backend ollama --model qwen2.5:7b
+deweaponize --token <TOKEN>   # get token from Settings page
 ```
 
 The sidebar shows a green dot when the proxy is connected and auto-detects when it comes online.
@@ -109,9 +88,7 @@ background.js        Message router, LLM calls, context menu, sidebar toggle
 content.js           DOM patching, blur/reveal, click-toggle, error toast
 content.css          Styles: blur, highlights, toast overlay with retry
 proxy.js             Local HTTP proxy with /health endpoint and token auth
-install.sh           One-line installer (Linux/macOS — systemd)
-install.ps1          One-line installer (Windows — Task Scheduler)
-uninstall.ps1        Uninstaller (Windows)
+package.json         npm package config (publishable proxy)
 sidebar/             Sidebar panel (lean main UI)
 options/             Options page (full tab, advanced settings)
 core/                Platform-agnostic tone engine, prompts, and tone files
