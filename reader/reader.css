@@ -1,11 +1,11 @@
 /* =========================================================================
-   Pharmakon Reader Mode — Full-page reading view
-   Dark theme, Pharmakon-branded, good typography
+   De-Weaponize Reader Mode — Full-page reading view
+   Dark theme, De-Weaponize-branded, good typography
    ========================================================================= */
 
 /* --- Reset & base --- */
 
-.pharmakon-reader {
+.dwz-reader {
   all: initial;
   display: block;
   min-height: 100vh;
@@ -18,15 +18,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.pharmakon-reader *,
-.pharmakon-reader *::before,
-.pharmakon-reader *::after {
+.dwz-reader *,
+.dwz-reader *::before,
+.dwz-reader *::after {
   box-sizing: border-box;
 }
 
 /* --- Toolbar (sticky top bar) --- */
 
-.pharmakon-reader-toolbar {
+.dwz-reader-toolbar {
   position: sticky;
   top: 0;
   z-index: 10000;
@@ -41,13 +41,13 @@
   font-size: 13px;
 }
 
-.pharmakon-reader-toolbar-left {
+.dwz-reader-toolbar-left {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.pharmakon-reader-exit {
+.dwz-reader-exit {
   background: #2a2a4a;
   color: #c0c0d0;
   border: none;
@@ -58,23 +58,23 @@
   transition: background 0.15s;
 }
 
-.pharmakon-reader-exit:hover {
+.dwz-reader-exit:hover {
   background: #3a3a5a;
   color: #fff;
 }
 
-.pharmakon-reader-brand {
+.dwz-reader-brand {
   font-weight: 700;
   color: #648cff;
   letter-spacing: 0.5px;
 }
 
-.pharmakon-reader-tone-label {
+.dwz-reader-tone-label {
   color: #888;
   font-size: 12px;
 }
 
-.pharmakon-reader-toggle-all {
+.dwz-reader-toggle-all {
   background: transparent;
   color: #648cff;
   border: 1px solid rgba(100, 140, 255, 0.3);
@@ -85,20 +85,20 @@
   transition: background 0.15s, border-color 0.15s;
 }
 
-.pharmakon-reader-toggle-all:hover {
+.dwz-reader-toggle-all:hover {
   background: rgba(100, 140, 255, 0.1);
   border-color: rgba(100, 140, 255, 0.5);
 }
 
 /* --- Header (article title, byline) --- */
 
-.pharmakon-reader-header {
+.dwz-reader-header {
   max-width: 680px;
   margin: 0 auto;
   padding: 48px 24px 0;
 }
 
-.pharmakon-reader-title {
+.dwz-reader-title {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 32px;
   font-weight: 700;
@@ -107,14 +107,14 @@
   margin: 0 0 12px;
 }
 
-.pharmakon-reader-byline {
+.dwz-reader-byline {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 14px;
   color: #777;
   margin: 0 0 8px;
 }
 
-.pharmakon-reader-meta {
+.dwz-reader-meta {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 13px;
   color: #666;
@@ -123,45 +123,45 @@
 
 /* --- Article body --- */
 
-.pharmakon-reader-body {
+.dwz-reader-body {
   max-width: 680px;
   margin: 0 auto;
   padding: 32px 24px 80px;
 }
 
-.pharmakon-reader-paragraph {
+.dwz-reader-paragraph {
   margin: 0 0 1.2em;
   transition: filter 0.3s ease-out, opacity 0.3s ease-out;
 }
 
 /* Heading tags inside reader body */
-.pharmakon-reader-paragraph[data-tag="h1"],
-.pharmakon-reader-paragraph[data-tag="h2"],
-.pharmakon-reader-paragraph[data-tag="h3"],
-.pharmakon-reader-paragraph[data-tag="h4"],
-.pharmakon-reader-paragraph[data-tag="h5"],
-.pharmakon-reader-paragraph[data-tag="h6"] {
+.dwz-reader-paragraph[data-tag="h1"],
+.dwz-reader-paragraph[data-tag="h2"],
+.dwz-reader-paragraph[data-tag="h3"],
+.dwz-reader-paragraph[data-tag="h4"],
+.dwz-reader-paragraph[data-tag="h5"],
+.dwz-reader-paragraph[data-tag="h6"] {
   font-family: system-ui, -apple-system, sans-serif;
   font-weight: 700;
   color: #e8e8f8;
   margin-top: 1.6em;
 }
 
-.pharmakon-reader-paragraph[data-tag="h1"] { font-size: 28px; }
-.pharmakon-reader-paragraph[data-tag="h2"] { font-size: 24px; }
-.pharmakon-reader-paragraph[data-tag="h3"] { font-size: 20px; }
-.pharmakon-reader-paragraph[data-tag="h4"],
-.pharmakon-reader-paragraph[data-tag="h5"],
-.pharmakon-reader-paragraph[data-tag="h6"] { font-size: 17px; }
+.dwz-reader-paragraph[data-tag="h1"] { font-size: 28px; }
+.dwz-reader-paragraph[data-tag="h2"] { font-size: 24px; }
+.dwz-reader-paragraph[data-tag="h3"] { font-size: 20px; }
+.dwz-reader-paragraph[data-tag="h4"],
+.dwz-reader-paragraph[data-tag="h5"],
+.dwz-reader-paragraph[data-tag="h6"] { font-size: 17px; }
 
-.pharmakon-reader-paragraph[data-tag="blockquote"] {
+.dwz-reader-paragraph[data-tag="blockquote"] {
   border-left: 3px solid rgba(100, 140, 255, 0.3);
   padding-left: 20px;
   color: #b0b0c8;
   font-style: italic;
 }
 
-.pharmakon-reader-paragraph[data-tag="pre"] {
+.dwz-reader-paragraph[data-tag="pre"] {
   font-family: "Fira Code", "Cascadia Code", "Consolas", monospace;
   font-size: 14px;
   line-height: 1.5;
@@ -172,12 +172,12 @@
   white-space: pre-wrap;
 }
 
-.pharmakon-reader-paragraph[data-tag="li"] {
+.dwz-reader-paragraph[data-tag="li"] {
   margin-left: 24px;
   padding-left: 4px;
 }
 
-.pharmakon-reader-paragraph[data-tag="li"]::before {
+.dwz-reader-paragraph[data-tag="li"]::before {
   content: "•";
   color: #648cff;
   margin-right: 8px;
@@ -185,7 +185,7 @@
 
 /* --- Feed layout --- */
 
-.pharmakon-reader-feed {
+.dwz-reader-feed {
   max-width: 680px;
   margin: 0 auto;
   padding: 24px 24px 80px;
@@ -194,7 +194,7 @@
   gap: 12px;
 }
 
-.pharmakon-reader-item {
+.dwz-reader-item {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 15px;
   line-height: 1.6;
@@ -205,39 +205,39 @@
   transition: filter 0.3s ease-out, opacity 0.3s ease-out;
 }
 
-.pharmakon-reader-item:hover {
+.dwz-reader-item:hover {
   border-color: rgba(100, 140, 255, 0.18);
 }
 
 /* --- Pending / blur state --- */
 
-.pharmakon-reader-pending {
+.dwz-reader-pending {
   filter: blur(4px);
   opacity: 0.6;
   user-select: none;
 }
 
-/* --- Replaced text (reuses Pharmakon inline highlight pattern) --- */
+/* --- Replaced text (reuses De-Weaponize inline highlight pattern) --- */
 
-.pharmakon-reader .pharmakon-replaced {
+.dwz-reader .dwz-replaced {
   background: rgba(100, 140, 255, 0.12);
   border-bottom: 2px solid rgba(100, 140, 255, 0.35);
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.pharmakon-reader .pharmakon-replaced:hover {
+.dwz-reader .dwz-replaced:hover {
   background: rgba(100, 140, 255, 0.22);
 }
 
-.pharmakon-reader .pharmakon-replaced.pharmakon-showing-original {
+.dwz-reader .dwz-replaced.dwz-showing-original {
   background: rgba(255, 180, 50, 0.12);
   border-bottom-color: rgba(255, 180, 50, 0.4);
 }
 
 /* --- Progress indicator --- */
 
-.pharmakon-reader-progress {
+.dwz-reader-progress {
   max-width: 680px;
   margin: 0 auto;
   padding: 0 24px;
@@ -248,38 +248,38 @@
 
 /* --- Animations --- */
 
-@keyframes pharmakon-reader-fadein {
+@keyframes dwz-reader-fadein {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.pharmakon-reader-body .pharmakon-reader-paragraph,
-.pharmakon-reader-feed .pharmakon-reader-item {
-  animation: pharmakon-reader-fadein 0.25s ease-out both;
+.dwz-reader-body .dwz-reader-paragraph,
+.dwz-reader-feed .dwz-reader-item {
+  animation: dwz-reader-fadein 0.25s ease-out both;
 }
 
 /* Stagger the animation for visual flow */
-.pharmakon-reader-body .pharmakon-reader-paragraph:nth-child(1) { animation-delay: 0.02s; }
-.pharmakon-reader-body .pharmakon-reader-paragraph:nth-child(2) { animation-delay: 0.04s; }
-.pharmakon-reader-body .pharmakon-reader-paragraph:nth-child(3) { animation-delay: 0.06s; }
-.pharmakon-reader-body .pharmakon-reader-paragraph:nth-child(4) { animation-delay: 0.08s; }
-.pharmakon-reader-body .pharmakon-reader-paragraph:nth-child(5) { animation-delay: 0.10s; }
+.dwz-reader-body .dwz-reader-paragraph:nth-child(1) { animation-delay: 0.02s; }
+.dwz-reader-body .dwz-reader-paragraph:nth-child(2) { animation-delay: 0.04s; }
+.dwz-reader-body .dwz-reader-paragraph:nth-child(3) { animation-delay: 0.06s; }
+.dwz-reader-body .dwz-reader-paragraph:nth-child(4) { animation-delay: 0.08s; }
+.dwz-reader-body .dwz-reader-paragraph:nth-child(5) { animation-delay: 0.10s; }
 
 /* --- Scrollbar --- */
 
-.pharmakon-reader::-webkit-scrollbar {
+.dwz-reader::-webkit-scrollbar {
   width: 8px;
 }
 
-.pharmakon-reader::-webkit-scrollbar-track {
+.dwz-reader::-webkit-scrollbar-track {
   background: #121220;
 }
 
-.pharmakon-reader::-webkit-scrollbar-thumb {
+.dwz-reader::-webkit-scrollbar-thumb {
   background: #2a2a4a;
   border-radius: 4px;
 }
 
-.pharmakon-reader::-webkit-scrollbar-thumb:hover {
+.dwz-reader::-webkit-scrollbar-thumb:hover {
   background: #3a3a5a;
 }

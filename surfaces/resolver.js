@@ -1,8 +1,8 @@
 // Surface resolver — picks the right surface for the current hostname.
 // Must be loaded AFTER all surface definitions.
 
-window.__pharmakonResolveSurface = function (hostname) {
-  const surfaces = window.__pharmakonSurfaces || [];
+window.__dwzResolveSurface = function (hostname) {
+  const surfaces = window.__dwzSurfaces || [];
   let fallback = null;
 
   for (const surface of surfaces) {

@@ -1,5 +1,5 @@
 // =========================================================================
-// Pharmakon — Options Page (advanced settings, full tab)
+// De-Weaponize — Options Page (advanced settings, full tab)
 // =========================================================================
 
 const providerEl = document.getElementById("provider");
@@ -193,7 +193,7 @@ document.getElementById("regen-token").addEventListener("click", async () => {
 const debugLogEl = document.getElementById("debug-log");
 
 async function refreshDebugLog() {
-  const resp = await browser.runtime.sendMessage({ type: "pharmakon-get-debug-log" });
+  const resp = await browser.runtime.sendMessage({ type: "dwz-get-debug-log" });
   if (!resp || !resp.log) {
     debugLogEl.textContent = "(no entries)";
     return;
@@ -203,6 +203,6 @@ async function refreshDebugLog() {
 
 document.getElementById("debug-refresh").addEventListener("click", refreshDebugLog);
 document.getElementById("debug-clear").addEventListener("click", async () => {
-  await browser.runtime.sendMessage({ type: "pharmakon-clear-debug-log" });
+  await browser.runtime.sendMessage({ type: "dwz-clear-debug-log" });
   debugLogEl.textContent = "(cleared)";
 });

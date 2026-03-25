@@ -1,5 +1,5 @@
-window.__pharmakonSurfaces = window.__pharmakonSurfaces || [];
-window.__pharmakonSurfaces.push({
+window.__dwzSurfaces = window.__dwzSurfaces || [];
+window.__dwzSurfaces.push({
   name: "reuters",
   hostnames: ["reuters.com", "www.reuters.com"],
 

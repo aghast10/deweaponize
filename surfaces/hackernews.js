@@ -1,5 +1,5 @@
-window.__pharmakonSurfaces = window.__pharmakonSurfaces || [];
-window.__pharmakonSurfaces.push({
+window.__dwzSurfaces = window.__dwzSurfaces || [];
+window.__dwzSurfaces.push({
   name: "hackernews",
   hostnames: ["news.ycombinator.com"],
   container: "#hnmain",

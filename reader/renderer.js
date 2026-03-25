@@ -1,10 +1,10 @@
 // =========================================================================
-// Pharmakon Reader Mode — Renderer
+// De-Weaponize Reader Mode — Renderer
 //
 // Manages the reader view lifecycle: enter, render items, apply patches,
 // handle toggles, exit. Fetches reader.css dynamically and injects it.
 //
-// Exposes: window.__pharmakonReader
+// Exposes: window.__dwzReader
 // =========================================================================
 
 (() => {
@@ -23,7 +23,7 @@
   // Public API
   // -----------------------------------------------------------------------
 
-  window.__pharmakonReader = {
+  window.__dwzReader = {
     get active() { return active; },
 
     async enter(data) {
@@ -33,7 +33,7 @@
 
       // Load settings for tone label
       try {
-        const settings = await browser.runtime.sendMessage({ type: "pharmakon-get-settings" });
+        const settings = await browser.runtime.sendMessage({ type: "dwz-get-settings" });
         // Extract first line of tone as label (tone files start with strategy prose)
         toneLabelText = (settings.tone || "").split("\n")[0].slice(0, 40);
       } catch {
@@ -124,26 +124,26 @@
     body.style.background = "#121220";
 
     const root = document.createElement("div");
-    root.className = "pharmakon-reader";
+    root.className = "dwz-reader";
 
     // --- Toolbar ---
     const toolbar = document.createElement("div");
-    toolbar.className = "pharmakon-reader-toolbar";
+    toolbar.className = "dwz-reader-toolbar";
 
     const toolbarLeft = document.createElement("div");
-    toolbarLeft.className = "pharmakon-reader-toolbar-left";
+    toolbarLeft.className = "dwz-reader-toolbar-left";
 
     const exitBtn = document.createElement("button");
-    exitBtn.className = "pharmakon-reader-exit";
+    exitBtn.className = "dwz-reader-exit";
     exitBtn.textContent = "\u2190 Back to page";
     exitBtn.addEventListener("click", exitReaderMode);
 
     const brand = document.createElement("span");
-    brand.className = "pharmakon-reader-brand";
-    brand.textContent = "Pharmakon";
+    brand.className = "dwz-reader-brand";
+    brand.textContent = "De-Weaponize";
 
     const toneLabel = document.createElement("span");
-    toneLabel.className = "pharmakon-reader-tone-label";
+    toneLabel.className = "dwz-reader-tone-label";
     toneLabel.textContent = toneLabelText ? `Tone: ${toneLabelText}` : "";
 
     toolbarLeft.appendChild(exitBtn);
@@ -151,7 +151,7 @@
     toolbarLeft.appendChild(toneLabel);
 
     const toggleAllBtn = document.createElement("button");
-    toggleAllBtn.className = "pharmakon-reader-toggle-all";
+    toggleAllBtn.className = "dwz-reader-toggle-all";
     toggleAllBtn.textContent = "Show originals";
     toggleAllBtn.addEventListener("click", toggleAll);
 
@@ -161,17 +161,17 @@
 
     // --- Header ---
     const header = document.createElement("div");
-    header.className = "pharmakon-reader-header";
+    header.className = "dwz-reader-header";
 
     const title = document.createElement("h1");
-    title.className = "pharmakon-reader-title";
+    title.className = "dwz-reader-title";
     title.textContent = data.title || "";
 
     header.appendChild(title);
 
     if (data.byline || data.siteName) {
       const byline = document.createElement("p");
-      byline.className = "pharmakon-reader-byline";
+      byline.className = "dwz-reader-byline";
       const parts = [data.byline, data.siteName].filter(Boolean);
       byline.textContent = parts.join(" \u00B7 ");
       header.appendChild(byline);
@@ -179,7 +179,7 @@
 
     if (data.type === "feed") {
       const meta = document.createElement("p");
-      meta.className = "pharmakon-reader-meta";
+      meta.className = "dwz-reader-meta";
       meta.textContent = `${items.length} item${items.length !== 1 ? "s" : ""} captured`;
       header.appendChild(meta);
     }
@@ -189,12 +189,12 @@
     // --- Content ---
     if (data.type === "article") {
       const body = document.createElement("article");
-      body.className = "pharmakon-reader-body";
+      body.className = "dwz-reader-body";
 
       for (let i = 0; i < items.length; i++) {
         const el = document.createElement("p");
-        el.className = "pharmakon-reader-paragraph pharmakon-reader-pending";
-        el.setAttribute("data-pharmakon-reader-idx", i);
+        el.className = "dwz-reader-paragraph dwz-reader-pending";
+        el.setAttribute("data-dwz-reader-idx", i);
         if (items[i].tag) el.setAttribute("data-tag", items[i].tag);
         el.textContent = items[i].text;
         body.appendChild(el);
@@ -203,12 +203,12 @@
       root.appendChild(body);
     } else {
       const feed = document.createElement("div");
-      feed.className = "pharmakon-reader-feed";
+      feed.className = "dwz-reader-feed";
 
       for (let i = 0; i < items.length; i++) {
         const el = document.createElement("div");
-        el.className = "pharmakon-reader-item pharmakon-reader-pending";
-        el.setAttribute("data-pharmakon-reader-idx", i);
+        el.className = "dwz-reader-item dwz-reader-pending";
+        el.setAttribute("data-dwz-reader-idx", i);
 
         const p = document.createElement("p");
         p.textContent = items[i].text;
@@ -261,7 +261,7 @@
     }
 
     browser.runtime.sendMessage({
-      type: "pharmakon-reader-batch",
+      type: "dwz-reader-batch",
       texts,
       batchIndex: batchIdx,
     });
@@ -272,23 +272,23 @@
   // -----------------------------------------------------------------------
 
   function getElement(globalIdx) {
-    return document.querySelector(`[data-pharmakon-reader-idx="${globalIdx}"]`);
+    return document.querySelector(`[data-dwz-reader-idx="${globalIdx}"]`);
   }
 
   function unblur(globalIdx) {
     const el = getElement(globalIdx);
-    if (el) el.classList.remove("pharmakon-reader-pending");
+    if (el) el.classList.remove("dwz-reader-pending");
   }
 
   function applyResult(globalIdx, result) {
     const el = getElement(globalIdx);
     if (!el) return;
-    el.classList.remove("pharmakon-reader-pending");
+    el.classList.remove("dwz-reader-pending");
 
     if (!result.patches || result.patches.length === 0) return;
 
     // Store original text for toggle
-    el.setAttribute("data-pharmakon-original-html", el.innerHTML);
+    el.setAttribute("data-dwz-original-html", el.innerHTML);
 
     // Apply patches via TreeWalker
     for (const patch of result.patches) {
@@ -327,10 +327,10 @@
     range.setEnd(endEntry.node, matchEnd - endEntry.start);
 
     const wrapper = document.createElement("span");
-    wrapper.className = "pharmakon-replaced";
+    wrapper.className = "dwz-replaced";
     wrapper.title = "Click to see original";
     wrapper.textContent = replacement;
-    wrapper.dataset.pharmakonOriginalText = searchStr;
+    wrapper.dataset.dwzOriginalText = searchStr;
     wrapper.addEventListener("click", toggleInline);
 
     range.deleteContents();
@@ -345,19 +345,19 @@
     e.stopPropagation();
     const el = e.currentTarget;
     if (el.dataset.showingOriginal === "true") {
-      el.textContent = el.dataset.pharmakonRewritten;
+      el.textContent = el.dataset.dwzRewritten;
       el.dataset.showingOriginal = "false";
-      el.classList.remove("pharmakon-showing-original");
+      el.classList.remove("dwz-showing-original");
     } else {
-      el.dataset.pharmakonRewritten = el.textContent;
-      el.textContent = el.dataset.pharmakonOriginalText;
+      el.dataset.dwzRewritten = el.textContent;
+      el.textContent = el.dataset.dwzOriginalText;
       el.dataset.showingOriginal = "true";
-      el.classList.add("pharmakon-showing-original");
+      el.classList.add("dwz-showing-original");
     }
   }
 
   function toggleAll() {
-    const spans = document.querySelectorAll(".pharmakon-reader .pharmakon-replaced");
+    const spans = document.querySelectorAll(".dwz-reader .dwz-replaced");
     if (spans.length === 0) return;
 
     showingOriginals = !showingOriginals;
@@ -371,7 +371,7 @@
       }
     }
 
-    const btn = document.querySelector(".pharmakon-reader-toggle-all");
+    const btn = document.querySelector(".dwz-reader-toggle-all");
     if (btn) btn.textContent = showingOriginals ? "Show adjusted" : "Show originals";
   }
 

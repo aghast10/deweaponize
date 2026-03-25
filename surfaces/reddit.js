@@ -1,5 +1,5 @@
-window.__pharmakonSurfaces = window.__pharmakonSurfaces || [];
-window.__pharmakonSurfaces.push({
+window.__dwzSurfaces = window.__dwzSurfaces || [];
+window.__dwzSurfaces.push({
   name: "reddit",
   hostnames: ["reddit.com"],
   container: "main, .main-content, #main-content",

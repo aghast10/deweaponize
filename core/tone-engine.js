@@ -1,10 +1,10 @@
-// Pharmakon Core — Tone Translation Engine
+// De-Weaponize Core — Tone Translation Engine
 //
 // Platform-agnostic engine for detecting and rewriting tone in text.
 // No DOM, no browser APIs, no network calls — just prompt logic and parsing.
 //
 // Usage:
-//   const engine = PharmakonCore.createEngine(transportFn, { detectPrompt, rewritePrompt });
+//   const engine = DWZCore.createEngine(transportFn, { detectPrompt, rewritePrompt });
 //   const results = await engine.detectBatch(texts, settings);
 //   const rewritten = await engine.rewriteSingle(text, settings);
 //
@@ -12,7 +12,7 @@
 // detectPrompt / rewritePrompt: markdown template strings loaded by the adaptation layer.
 // Each adaptation (browser extension, API server, CLI) provides its own transport and loader.
 
-const PharmakonCore = (() => {
+const DWZCore = (() => {
   // =========================================================================
   // Sensitivity descriptions — shared vocabulary across all adaptations
   // =========================================================================
@@ -132,5 +132,5 @@ const PharmakonCore = (() => {
 
 // Support Node.js require() for server-side adaptations
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = PharmakonCore;
+  module.exports = DWZCore;
 }

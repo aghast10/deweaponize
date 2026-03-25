@@ -1,8 +1,8 @@
 // Infovaticana — uses the proprietary Infovat FC comment system
 // hosted on comments.infovaticana.com, injected dynamically.
 
-window.__pharmakonSurfaces = window.__pharmakonSurfaces || [];
-window.__pharmakonSurfaces.push({
+window.__dwzSurfaces = window.__dwzSurfaces || [];
+window.__dwzSurfaces.push({
   name: "infovaticana",
   hostnames: ["infovaticana.com"],
 

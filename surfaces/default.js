@@ -1,8 +1,8 @@
 // Fallback surface for unknown sites — targets common semantic content elements.
 // Loaded last so named surfaces take priority.
 
-window.__pharmakonSurfaces = window.__pharmakonSurfaces || [];
-window.__pharmakonSurfaces.push({
+window.__dwzSurfaces = window.__dwzSurfaces || [];
+window.__dwzSurfaces.push({
   name: "default",
   hostnames: null, // matches everything — used as fallback
 

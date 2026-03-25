@@ -2,7 +2,7 @@
    Blur pending elements until API result arrives
    ============================================= */
 
-.pharmakon-pending {
+.dwz-pending {
   filter: blur(6px) !important;
   user-select: none !important;
   cursor: pointer !important;
@@ -10,7 +10,7 @@
 }
 
 /* User clicked to peek at original blurred content */
-.pharmakon-pending.pharmakon-peeking {
+.dwz-pending.dwz-peeking {
   filter: none !important;
   user-select: auto !important;
 }
@@ -19,7 +19,7 @@
    Toast overlay (bottom-right)
    ============================================= */
 
-.pharmakon-overlay {
+.dwz-overlay {
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -34,19 +34,19 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  animation: pharmakon-fadein 0.15s ease-out;
+  animation: dwz-fadein 0.15s ease-out;
 }
 
-.pharmakon-overlay.pharmakon-error {
+.dwz-overlay.dwz-error {
   background: #6b2020;
   border-left: 3px solid #e55;
 }
 
-.pharmakon-overlay-text {
+.dwz-overlay-text {
   flex: 1;
 }
 
-.pharmakon-overlay-retry {
+.dwz-overlay-retry {
   padding: 4px 12px;
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
@@ -58,11 +58,11 @@
   flex-shrink: 0;
 }
 
-.pharmakon-overlay-retry:hover {
+.dwz-overlay-retry:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 
-.pharmakon-overlay-close {
+.dwz-overlay-close {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.5);
@@ -73,7 +73,7 @@
   flex-shrink: 0;
 }
 
-.pharmakon-overlay-close:hover {
+.dwz-overlay-close:hover {
   color: #fff;
 }
 
@@ -81,25 +81,25 @@
    Inline replaced text (individual passages)
    ============================================= */
 
-.pharmakon-replaced {
+.dwz-replaced {
   background: rgba(100, 140, 255, 0.10);
   border-bottom: 2px solid rgba(100, 140, 255, 0.35);
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.pharmakon-replaced:hover {
+.dwz-replaced:hover {
   background: rgba(100, 140, 255, 0.20);
 }
 
 /* Block-level replaced element (whole tweet/post) */
-.pharmakon-replaced-block {
+.dwz-replaced-block {
   cursor: pointer;
 }
 
 /* Toggled: showing the original text */
-.pharmakon-replaced.pharmakon-showing-original,
-.pharmakon-replaced-block.pharmakon-showing-original {
+.dwz-replaced.dwz-showing-original,
+.dwz-replaced-block.dwz-showing-original {
   background: rgba(255, 180, 50, 0.10);
   border-bottom-color: rgba(255, 180, 50, 0.4);
 }
@@ -108,7 +108,7 @@
    Animations
    ============================================= */
 
-@keyframes pharmakon-fadein {
+@keyframes dwz-fadein {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }

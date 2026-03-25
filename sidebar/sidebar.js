@@ -1,5 +1,5 @@
 // =========================================================================
-// Pharmakon — Sidebar (lean main UI)
+// De-Weaponize — Sidebar (lean main UI)
 // =========================================================================
 
 const toneEl = document.getElementById("tone");
@@ -118,7 +118,7 @@ toggleBtn.addEventListener("click", async () => {
   const tabs = await browser.tabs.query({});
   for (const tab of tabs) {
     browser.tabs.sendMessage(tab.id, {
-      type: "pharmakon-set-enabled",
+      type: "dwz-set-enabled",
       enabled: newState,
     }).catch(() => {});
   }
@@ -181,7 +181,11 @@ async function checkHealth(settings) {
   // Local proxy mode — hit /health
   const url = (settings.proxyUrl || "http://127.0.0.1:7880") + "/health";
   try {
-    const resp = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    const fetchOpts = { signal: AbortSignal.timeout(3000) };
+    if (settings.proxyToken) {
+      fetchOpts.headers = { "Authorization": `Bearer ${settings.proxyToken}` };
+    }
+    const resp = await fetch(url, fetchOpts);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
 

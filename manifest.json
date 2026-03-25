@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Pharmakon",
+  "name": "De-Weaponize",
   "version": "0.3.0",
   "description": "Relational frame translation engine — transforms the implicit positioning between writer, reader, and subject in text.",
   "permissions": [
@@ -14,7 +14,7 @@
     "scripts": ["core/tone-engine.js", "background.js"]
   },
   "sidebar_action": {
-    "default_title": "Pharmakon",
+    "default_title": "De-Weaponize",
     "default_panel": "sidebar/sidebar.html",
     "default_icon": {
       "48": "icons/logo-1.png",
@@ -26,7 +26,7 @@
       "48": "icons/logo-1.png",
       "96": "icons/logo-1.png"
     },
-    "default_title": "Toggle Pharmakon sidebar"
+    "default_title": "Toggle De-Weaponize sidebar"
   },
   "options_ui": {
     "page": "options/options.html",
@@ -61,11 +61,11 @@
   "commands": {
     "_execute_sidebar_action": {
       "suggested_key": { "default": "Ctrl+Shift+U" },
-      "description": "Toggle Pharmakon sidebar"
+      "description": "Toggle De-Weaponize sidebar"
     },
     "reader-mode": {
       "suggested_key": { "default": "Alt+Shift+R" },
-      "description": "Activate Pharmakon Reader Mode"
+      "description": "Activate De-Weaponize Reader Mode"
     }
   },
   "icons": {

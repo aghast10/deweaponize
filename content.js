@@ -2,7 +2,7 @@
   const BATCH_DELAY_MS = 200;        // debounce for subsequent batches (new content)
   const FIRST_BATCH_DELAY_MS = 1500; // longer wait on first batch so page finishes rendering
   const MAX_BATCH_SIZE = 20; // max items per API call
-  const PROCESSED_ATTR = "data-pharmakon";
+  const PROCESSED_ATTR = "data-dwz";
 
   let enabled = false;
   let surface = null;
@@ -19,7 +19,7 @@
   browser.storage.local.get({ enabled: true }).then((s) => {
     enabled = s.enabled;
     if (enabled) {
-      document.documentElement.classList.add("pharmakon-active");
+      document.documentElement.classList.add("dwz-active");
       boot();
     }
   });
@@ -27,63 +27,63 @@
   // Listen for enable/disable toggle from popup
   browser.runtime.onMessage.addListener((msg) => {
     switch (msg.type) {
-      case "pharmakon-set-enabled":
+      case "dwz-set-enabled":
         enabled = msg.enabled;
         if (enabled) {
-          document.documentElement.classList.add("pharmakon-active");
+          document.documentElement.classList.add("dwz-active");
           boot();
           scanExisting();
         } else {
-          document.documentElement.classList.remove("pharmakon-active");
+          document.documentElement.classList.remove("dwz-active");
         }
         break;
 
-      case "pharmakon-batch-partial":
+      case "dwz-batch-partial":
         handlePartialResult(msg.batchIndex, msg.item);
         break;
 
-      case "pharmakon-batch-result":
+      case "dwz-batch-result":
         handleBatchResult(msg.results);
         break;
 
-      case "pharmakon-error":
+      case "dwz-error":
         hideOverlay();
         showOverlay(msg.error, true);
         setTimeout(hideOverlay, 5000);
         break;
 
       // Manual selection result (right-click)
-      case "pharmakon-selection-result":
+      case "dwz-selection-result":
         hideOverlay();
         replaceSelection(msg.text);
         break;
 
-      case "pharmakon-loading":
+      case "dwz-loading":
         showOverlay(msg.text || "Processing…");
         break;
 
       // --- Reader Mode ---
-      case "pharmakon-reader-mode":
-        if (window.__pharmakonReader && !window.__pharmakonReader.active) {
-          const surf = window.__pharmakonResolveSurface
-            ? window.__pharmakonResolveSurface(location.hostname)
+      case "dwz-reader-mode":
+        if (window.__dwzReader && !window.__dwzReader.active) {
+          const surf = window.__dwzResolveSurface
+            ? window.__dwzResolveSurface(location.hostname)
             : null;
-          const data = window.__pharmakonExtractForReader
-            ? window.__pharmakonExtractForReader(surf)
+          const data = window.__dwzExtractForReader
+            ? window.__dwzExtractForReader(surf)
             : { type: "feed", title: document.title, items: [] };
-          window.__pharmakonReader.enter(data);
+          window.__dwzReader.enter(data);
         }
         break;
 
-      case "pharmakon-reader-batch-result":
-        if (window.__pharmakonReader && window.__pharmakonReader.active) {
-          window.__pharmakonReader.handleBatchResult(msg.results);
+      case "dwz-reader-batch-result":
+        if (window.__dwzReader && window.__dwzReader.active) {
+          window.__dwzReader.handleBatchResult(msg.results);
         }
         break;
 
-      case "pharmakon-reader-batch-partial":
-        if (window.__pharmakonReader && window.__pharmakonReader.active) {
-          window.__pharmakonReader.handlePartialResult(msg.batchIndex, msg.item);
+      case "dwz-reader-batch-partial":
+        if (window.__dwzReader && window.__dwzReader.active) {
+          window.__dwzReader.handlePartialResult(msg.batchIndex, msg.item);
         }
         break;
     }
@@ -98,7 +98,7 @@
   function boot() {
     if (observer) return; // already running
 
-    surface = window.__pharmakonResolveSurface(location.hostname);
+    surface = window.__dwzResolveSurface(location.hostname);
     if (!surface) return;
 
     // Wait for body to exist (we run at document_start)
@@ -164,15 +164,15 @@
   function enqueue(el) {
     // Mark immediately so we don't double-queue
     el.setAttribute(PROCESSED_ATTR, "pending");
-    el.classList.add("pharmakon-pending");
+    el.classList.add("dwz-pending");
     el.addEventListener("click", onPendingClick);
     queue.push(el);
   }
 
   function onPendingClick(e) {
     const el = e.currentTarget;
-    if (el.classList.contains("pharmakon-pending")) {
-      el.classList.toggle("pharmakon-peeking");
+    if (el.classList.contains("dwz-pending")) {
+      el.classList.toggle("dwz-peeking");
     }
   }
 
@@ -189,7 +189,7 @@
   // Alarming element removal
   // =========================================================================
 
-  const ALARMING_ATTR = "data-pharmakon-cleaned";
+  const ALARMING_ATTR = "data-dwz-cleaned";
 
   const ALARMING_TEXT = /^(en\s+directo|breaking(\s+news)?|última\s+hora|urgente|en\s+vivo|directo|live(\s+now)?|alert|noticia\s+urgente|última\s+hora\s+informativa)$/i;
 
@@ -258,7 +258,7 @@
       const text = extractText(el);
       if (text.length < 15) {
         // Too short to be meaningful — unblur immediately, no LLM call
-        el.classList.remove("pharmakon-pending", "pharmakon-peeking");
+        el.classList.remove("dwz-pending", "dwz-peeking");
         el.removeEventListener("click", onPendingClick);
         el.setAttribute(PROCESSED_ATTR, "done");
         continue;
@@ -274,14 +274,14 @@
 
     // Store element refs by index so we can map results back
     const pendingBatch = items.map((it) => it.el);
-    window.__pharmakonPendingBatch = (window.__pharmakonPendingBatch || []).concat([pendingBatch]);
+    window.__dwzPendingBatch = (window.__dwzPendingBatch || []).concat([pendingBatch]);
 
     // Send to background
     firstBatchSent = true;
     browser.runtime.sendMessage({
-      type: "pharmakon-batch",
+      type: "dwz-batch",
       texts: items.map((it) => it.text),
-      batchIndex: (window.__pharmakonPendingBatch || []).length - 1,
+      batchIndex: (window.__dwzPendingBatch || []).length - 1,
     });
 
     // Next batch is triggered from handleBatchResult to preserve top→bottom order.
@@ -306,7 +306,7 @@
 
   function handleBatchResult(results) {
     // results: { batchIndex, items: [{index, original, rewritten}] }
-    const batches = window.__pharmakonPendingBatch || [];
+    const batches = window.__dwzPendingBatch || [];
     const batch = batches[results.batchIndex];
     if (!batch) return;
 
@@ -334,7 +334,7 @@
   }
 
   function handlePartialResult(batchIndex, item) {
-    const batches = window.__pharmakonPendingBatch || [];
+    const batches = window.__dwzPendingBatch || [];
     const batch = batches[batchIndex];
     if (!batch) return;
     const el = batch[item.index];
@@ -344,7 +344,7 @@
   }
 
   function revealElement(el, rewrite) {
-    el.classList.remove("pharmakon-pending", "pharmakon-peeking");
+    el.classList.remove("dwz-pending", "dwz-peeking");
     el.removeEventListener("click", onPendingClick);
     el.setAttribute(PROCESSED_ATTR, "done");
 
@@ -360,8 +360,8 @@
       }
     } else if (rewrite.rewritten) {
       // Full element rewrite (fallback)
-      el.classList.add("pharmakon-replaced-block");
-      el.dataset.pharmakonOriginal = originalHTML;
+      el.classList.add("dwz-replaced-block");
+      el.dataset.dwzOriginal = originalHTML;
       el.innerText = rewrite.rewritten;
       el.addEventListener("click", toggleBlockRevert, { once: false });
     }
@@ -398,10 +398,10 @@
     range.setEnd(endEntry.node, matchEnd - endEntry.start);
 
     const wrapper = document.createElement("span");
-    wrapper.className = "pharmakon-replaced";
+    wrapper.className = "dwz-replaced";
     wrapper.title = "Click to see original";
     wrapper.textContent = replacement;
-    wrapper.dataset.pharmakonOriginalText = searchStr;
+    wrapper.dataset.dwzOriginalText = searchStr;
     wrapper.addEventListener("click", toggleInlineRevert);
 
     range.deleteContents();
@@ -416,33 +416,33 @@
     e.stopPropagation();
     const el = e.currentTarget;
     if (el.dataset.showingOriginal === "true") {
-      el.textContent = el.dataset.pharmakonRewritten;
+      el.textContent = el.dataset.dwzRewritten;
       el.dataset.showingOriginal = "false";
-      el.classList.remove("pharmakon-showing-original");
+      el.classList.remove("dwz-showing-original");
     } else {
-      el.dataset.pharmakonRewritten = el.textContent;
-      el.textContent = el.dataset.pharmakonOriginalText;
+      el.dataset.dwzRewritten = el.textContent;
+      el.textContent = el.dataset.dwzOriginalText;
       el.dataset.showingOriginal = "true";
-      el.classList.add("pharmakon-showing-original");
+      el.classList.add("dwz-showing-original");
     }
   }
 
   function toggleBlockRevert(e) {
     const el = e.currentTarget;
     if (el.dataset.showingOriginal === "true") {
-      el.innerHTML = el.dataset.pharmakonRewritten;
+      el.innerHTML = el.dataset.dwzRewritten;
       el.dataset.showingOriginal = "false";
-      el.classList.remove("pharmakon-showing-original");
+      el.classList.remove("dwz-showing-original");
     } else {
-      el.dataset.pharmakonRewritten = el.innerHTML;
-      el.innerHTML = el.dataset.pharmakonOriginal;
+      el.dataset.dwzRewritten = el.innerHTML;
+      el.innerHTML = el.dataset.dwzOriginal;
       el.dataset.showingOriginal = "true";
-      el.classList.add("pharmakon-showing-original");
+      el.classList.add("dwz-showing-original");
     }
   }
 
   // =========================================================================
-  // Manual selection mode (right-click → Pharmakon)
+  // Manual selection mode (right-click → De-Weaponize)
   // =========================================================================
 
   document.addEventListener("mouseup", () => {
@@ -458,10 +458,10 @@
     originalRange.deleteContents();
 
     const wrapper = document.createElement("span");
-    wrapper.className = "pharmakon-replaced";
+    wrapper.className = "dwz-replaced";
     wrapper.title = "Click to see original";
     wrapper.textContent = newText;
-    wrapper.dataset.pharmakonOriginalText = originalText;
+    wrapper.dataset.dwzOriginalText = originalText;
     wrapper.addEventListener("click", toggleInlineRevert);
 
     originalRange.insertNode(wrapper);
@@ -475,16 +475,16 @@
   function showOverlay(text, isError = false) {
     hideOverlay();
     overlayEl = document.createElement("div");
-    overlayEl.className = "pharmakon-overlay" + (isError ? " pharmakon-error" : "");
+    overlayEl.className = "dwz-overlay" + (isError ? " dwz-error" : "");
 
     const textSpan = document.createElement("span");
-    textSpan.className = "pharmakon-overlay-text";
+    textSpan.className = "dwz-overlay-text";
     textSpan.textContent = friendlyError(text, isError);
     overlayEl.appendChild(textSpan);
 
     if (isError) {
       const retryBtn = document.createElement("button");
-      retryBtn.className = "pharmakon-overlay-retry";
+      retryBtn.className = "dwz-overlay-retry";
       retryBtn.textContent = "Retry";
       retryBtn.addEventListener("click", () => {
         hideOverlay();
@@ -493,7 +493,7 @@
       overlayEl.appendChild(retryBtn);
 
       const closeBtn = document.createElement("button");
-      closeBtn.className = "pharmakon-overlay-close";
+      closeBtn.className = "dwz-overlay-close";
       closeBtn.textContent = "\u00d7";
       closeBtn.setAttribute("aria-label", "Dismiss");
       closeBtn.addEventListener("click", hideOverlay);

@@ -1,8 +1,8 @@
 // =========================================================================
-// Pharmakon — Browser Extension Adaptation (background script)
+// De-Weaponize — Browser Extension Adaptation (background script)
 //
 // Handles browser plumbing: context menu, messaging, badge, settings.
-// Delegates all tone detection/rewriting to PharmakonCore (core/tone-engine.js).
+// Delegates all tone detection/rewriting to DWZCore (core/tone-engine.js).
 // =========================================================================
 
 // --- Transport: routes LLM calls to local proxy or Anthropic API ---
@@ -202,7 +202,7 @@ const enginePromise = (async () => {
     fetch(browser.runtime.getURL("core/prompts/detect.md")).then((r) => r.text()),
     fetch(browser.runtime.getURL("core/prompts/rewrite.md")).then((r) => r.text()),
   ]);
-  return PharmakonCore.createEngine(llmTransport, { detectPrompt, rewritePrompt });
+  return DWZCore.createEngine(llmTransport, { detectPrompt, rewritePrompt });
 })();
 
 // =========================================================================
@@ -210,23 +210,23 @@ const enginePromise = (async () => {
 // =========================================================================
 
 browser.contextMenus.create({
-  id: "pharmakon-rewrite",
-  title: "Pharmakon — Rewrite selection",
+  id: "dwz-rewrite",
+  title: "De-Weaponize — Rewrite selection",
   contexts: ["selection"],
 });
 
 browser.contextMenus.create({
-  id: "pharmakon-reader",
-  title: "Pharmakon — Reader Mode",
+  id: "dwz-reader",
+  title: "De-Weaponize — Reader Mode",
   contexts: ["page"],
 });
 
 browser.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === "pharmakon-reader") {
-    browser.tabs.sendMessage(tab.id, { type: "pharmakon-reader-mode" });
+  if (info.menuItemId === "dwz-reader") {
+    browser.tabs.sendMessage(tab.id, { type: "dwz-reader-mode" });
     return;
   }
-  if (info.menuItemId !== "pharmakon-rewrite") return;
+  if (info.menuItemId !== "dwz-rewrite") return;
 
   const settings = await getSettings();
   if (!validateSettings(settings, tab.id)) return;
@@ -236,7 +236,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
     const engine = await enginePromise;
     const rewritten = await engine.rewriteSingle(info.selectionText, settings);
-    browser.tabs.sendMessage(tab.id, { type: "pharmakon-selection-result", text: rewritten });
+    browser.tabs.sendMessage(tab.id, { type: "dwz-selection-result", text: rewritten });
   } catch (err) {
     notify(tab.id, "error", err.message);
   }
@@ -247,19 +247,19 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 // =========================================================================
 
 browser.runtime.onMessage.addListener((msg, sender) => {
-  if (msg.type === "pharmakon-batch") {
-    handleBatch(sender.tab.id, msg.texts, msg.batchIndex, "pharmakon-batch");
+  if (msg.type === "dwz-batch") {
+    handleBatch(sender.tab.id, msg.texts, msg.batchIndex, "dwz-batch");
   }
-  if (msg.type === "pharmakon-reader-batch") {
-    handleBatch(sender.tab.id, msg.texts, msg.batchIndex, "pharmakon-reader-batch");
+  if (msg.type === "dwz-reader-batch") {
+    handleBatch(sender.tab.id, msg.texts, msg.batchIndex, "dwz-reader-batch");
   }
-  if (msg.type === "pharmakon-get-settings") {
+  if (msg.type === "dwz-get-settings") {
     return getSettings();
   }
-  if (msg.type === "pharmakon-get-debug-log") {
+  if (msg.type === "dwz-get-debug-log") {
     return Promise.resolve({ log: _debugLog });
   }
-  if (msg.type === "pharmakon-clear-debug-log") {
+  if (msg.type === "dwz-clear-debug-log") {
     _debugLog.length = 0;
     return Promise.resolve({ ok: true });
   }
@@ -269,7 +269,7 @@ browser.runtime.onMessage.addListener((msg, sender) => {
 browser.commands.onCommand.addListener((command) => {
   if (command === "reader-mode") {
     browser.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
-      if (tab) browser.tabs.sendMessage(tab.id, { type: "pharmakon-reader-mode" });
+      if (tab) browser.tabs.sendMessage(tab.id, { type: "dwz-reader-mode" });
     });
   }
 });
@@ -326,7 +326,7 @@ async function getSettings() {
 
 function validateSettings(settings, tabId) {
   if (settings.provider === "api" && !settings.apiKey) {
-    notify(tabId, "error", "No API key set. Click the Pharmakon icon to configure.");
+    notify(tabId, "error", "No API key set. Click the De-Weaponize icon to configure.");
     return false;
   }
   return true;
@@ -364,7 +364,7 @@ function cacheSet(text, settings, result) {
 // =========================================================================
 
 async function handleBatch(tabId, texts, batchIndex, msgPrefix) {
-  msgPrefix = msgPrefix || "pharmakon-batch";
+  msgPrefix = msgPrefix || "dwz-batch";
   const settings = await getSettings();
   if (!validateSettings(settings, tabId)) return;
 
@@ -498,6 +498,6 @@ async function handleBatch(tabId, texts, batchIndex, msgPrefix) {
 // =========================================================================
 
 function notify(tabId, level, text) {
-  const type = level === "error" ? "pharmakon-error" : "pharmakon-loading";
+  const type = level === "error" ? "dwz-error" : "dwz-loading";
   browser.tabs.sendMessage(tabId, { type, [level === "error" ? "error" : "text"]: text });
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs pharmakon-proxy as a systemd user service so the local proxy
+# Installs dwz-proxy as a systemd user service so the local proxy
 # starts automatically on login.
 
 set -e
@@ -15,9 +15,9 @@ fi
 SERVICE_DIR="$HOME/.config/systemd/user"
 mkdir -p "$SERVICE_DIR"
 
-cat > "$SERVICE_DIR/pharmakon-proxy.service" <<EOF
+cat > "$SERVICE_DIR/dwz-proxy.service" <<EOF
 [Unit]
-Description=Pharmakon local proxy (bridges extension → claude CLI)
+Description=De-Weaponize local proxy (bridges extension → claude CLI)
 After=network.target
 
 [Service]
@@ -30,11 +30,11 @@ WantedBy=default.target
 EOF
 
 systemctl --user daemon-reload
-systemctl --user enable pharmakon-proxy
-systemctl --user start pharmakon-proxy
+systemctl --user enable dwz-proxy
+systemctl --user start dwz-proxy
 
-echo "pharmakon-proxy installed and running."
-echo "  status:  systemctl --user status pharmakon-proxy"
-echo "  logs:    journalctl --user -u pharmakon-proxy -f"
-echo "  stop:    systemctl --user stop pharmakon-proxy"
-echo "  disable: systemctl --user disable pharmakon-proxy"
+echo "dwz-proxy installed and running."
+echo "  status:  systemctl --user status dwz-proxy"
+echo "  logs:    journalctl --user -u dwz-proxy -f"
+echo "  stop:    systemctl --user stop dwz-proxy"
+echo "  disable: systemctl --user disable dwz-proxy"

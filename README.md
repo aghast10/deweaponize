@@ -1,11 +1,11 @@
-# Pharmakon
+# De-Weaponize
 
 A Firefox WebExtension that rewrites harsh or aggressive text on web pages into a tone of your choosing, using Claude. Uses Relational Frame Theory as its analytical lens — instead of swapping vocabulary, it detects and reshapes the underlying frames (opposition, hierarchy, comparison, causation, perspective) to match a target tone.
 
 ## Features
 
 - **Auto mode** — toggle ON in the sidebar to automatically detect and rewrite aggressive passages as you browse
-- **Manual mode** — select any text, right-click, and choose *Pharmakon — Rewrite selection*
+- **Manual mode** — select any text, right-click, and choose *De-Weaponize — Rewrite selection*
 - **11 tone presets** — de-weaponize, neutral, casual, formal, warm, ELI5, humorous, academic, concise, poetic, and more
 - **3 sensitivity levels** — low, moderate, high
 - **Click to toggle** — click any rewritten passage to switch between the original and adjusted text
@@ -29,7 +29,7 @@ No build step required — load directly in Firefox as a temporary add-on:
 ### Quick start
 
 1. Install the extension (see above)
-2. Click the Pharmakon icon in the toolbar or press `Ctrl+Shift+U` to open the sidebar
+2. Click the De-Weaponize icon in the toolbar or press `Ctrl+Shift+U` to open the sidebar
 3. If using the local proxy, follow the setup instructions shown in the sidebar
 4. Toggle **ON** and browse normally — text is blurred until processed
 
@@ -46,10 +46,10 @@ To start the proxy automatically on login, run the install script once:
 This installs a systemd user service that starts with your session and restarts on failure. To manage it:
 
 ```bash
-systemctl --user status pharmakon-proxy
-systemctl --user restart pharmakon-proxy
-journalctl --user -u pharmakon-proxy -f   # logs
-systemctl --user disable pharmakon-proxy  # uninstall
+systemctl --user status dwz-proxy
+systemctl --user restart dwz-proxy
+journalctl --user -u dwz-proxy -f   # logs
+systemctl --user disable dwz-proxy  # uninstall
 ```
 
 Or start it manually:

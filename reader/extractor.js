@@ -1,16 +1,16 @@
 // =========================================================================
-// Pharmakon Reader Mode — Content Extractor
+// De-Weaponize Reader Mode — Content Extractor
 //
 // Dual-path extraction:
 //   1. Feed/thread pages (known surfaces) → collect items via surface selectors
 //   2. Article pages → Mozilla Readability.js
 //   3. Fallback → surface selectors on unknown pages
 //
-// Exposes: window.__pharmakonExtractForReader(surface)
+// Exposes: window.__dwzExtractForReader(surface)
 // Returns: { type: "article"|"feed", title, byline, siteName, items: [{text, tag?}] }
 // =========================================================================
 
-window.__pharmakonExtractForReader = function (surface) {
+window.__dwzExtractForReader = function (surface) {
   const FEED_SURFACES = ["twitter", "reddit", "hackernews", "youtube", "facebook"];
 
   if (surface && FEED_SURFACES.includes(surface.name)) {

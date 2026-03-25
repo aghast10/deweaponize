@@ -1,4 +1,4 @@
-# Pharmakon — Future Ideas
+# De-Weaponize — Future Ideas
 
 ## New Adaptations
 
@@ -10,7 +10,7 @@
 
 ## Big Ideas
 
-- **Send/receive prompt negotiation** — Each user has two prompts: a send prompt ("how I want to come across") and a receive prompt ("how I want to receive messages"). When two Pharmakon users communicate, the system negotiates a "channel style" that satisfies both constraints — like a TLS handshake for tone. The negotiated style persists for that pair; either party can adjust, triggering renegotiation. This turns Pharmakon from a single-user tool into a communication protocol with network effects.
+- **Send/receive prompt negotiation** — Each user has two prompts: a send prompt ("how I want to come across") and a receive prompt ("how I want to receive messages"). When two De-Weaponize users communicate, the system negotiates a "channel style" that satisfies both constraints — like a TLS handshake for tone. The negotiated style persists for that pair; either party can adjust, triggering renegotiation. This turns De-Weaponize from a single-user tool into a communication protocol with network effects.
 
 ## Core
 
