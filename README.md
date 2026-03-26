@@ -94,9 +94,11 @@ Open the **Settings** page (link in sidebar footer), set **Provider** to *Anthro
 | Setting | Default | Options |
 |---------|---------|---------|
 | Sensitivity | moderate | low / moderate / high |
-| Model | claude-haiku-4-5-20251001 | Per-provider model list |
+| Model | claude-haiku-4-5-20251001 | Per-provider model list — see note below |
 | Provider | local | local / api / openai |
 | Proxy Token | auto-generated | shared secret for proxy auth |
+
+> **Model note:** `claude-haiku-4-5-20251001` has been tested and works well. Local models (e.g. Ollama with `qwen2.5:7b`) may not reliably follow the relational framing instructions — RFT-based rewriting benefits from a model with strong instruction-following; if results look off, switch to a hosted model.
 
 ## File Overview
 
